@@ -10,7 +10,7 @@ import java.util.List;
  * @author luisg
  */
 class Planilha {
-    
+
     /**
      * Localiza e remove as linhas que correspondem ao cabeçalho esperado do
      * arquivo CSV.
@@ -42,7 +42,7 @@ class Planilha {
 
         if (!listaCabecalhos.isEmpty()) {
             for (Linha linha : listaCabecalhos) {
-                relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
+                relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
             }
         } else {
             relatorioIntegridade.add("\tCabeçalho não encontrado");
@@ -67,7 +67,7 @@ class Planilha {
      * @param qtdEsperadaDeCampos integer com a quantidade esperada de campos
      * por linha.
      */
-    protected static void verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos) {
+    protected static List<Linha> verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos) {
         relatorioIntegridade.add("\nEXCLUSÃO: QUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
 
         Iterator<Linha> iteradorLinhas = linhas.iterator();
@@ -77,16 +77,20 @@ class Planilha {
             Linha linha = iteradorLinhas.next();
             if (linha.getConteudo().split(";").length != qtdEsperadaDeCampos) {
                 linhasComErro.add(linha);
-                relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
+                relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
                 iteradorLinhas.remove();
             }
         }
 
         if (linhasComErro.isEmpty()) {
             relatorioIntegridade.add("\tNenhuma linha filtrada");
+        } else {
+            relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
         }
+
+        return linhasComErro;
     }
-    
+
     /**
      * Verifica se alguma linha possui campos vazios e as exclui do
      * processamento.
@@ -117,9 +121,11 @@ class Planilha {
 
         if (linhasComErro.isEmpty()) {
             relatorioIntegridade.add("\tNenhuma linha filtrada");
+        } else {
+            relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
         }
     }
-    
+
     /**
      * Verifica se uma linha possui algum campo vazio.
      *

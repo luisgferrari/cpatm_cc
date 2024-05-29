@@ -1,6 +1,7 @@
 package cc.view;
 
 import cc.service.PlanilhaConfig;
+import cc.service.PlanilhaFlights;
 import cc.service.PlanilhaSectConfig;
 import java.awt.*;
 import java.io.File;
@@ -41,6 +42,8 @@ public class SelecaoDeArquivos extends Frame {
                         PlanilhaConfig.verificarIntegridade(path);
                     } else if (sufix.equalsIgnoreCase(PlanilhaSectConfig.SUFIXO_ARQUIVO)) {
                         PlanilhaSectConfig.verificarIntegridade(path);
+                    } else if (sufix.equalsIgnoreCase(PlanilhaFlights.SUFIXO_ARQUIVO)) {
+                        PlanilhaFlights.verificarIntegridade(path);
                     } else {
                         arquivosNaoValidados.add(arquivo.getName());
                     }

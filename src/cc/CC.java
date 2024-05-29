@@ -4,6 +4,7 @@ import cc.service.PlanilhaConfig;
 import cc.service.PlanilhaSectConfig;
 import cc.view.SelecaoDeArquivos;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  *
@@ -20,7 +21,7 @@ public class CC {
 
 //        Path path_Sect_Config = Path.of("C:\\Users\\luisg\\Desktop\\05. Mai_24\\20240501_sect_config.csv");
 //        PlanilhaSectConfig.verificarIntegridade(path_Sect_Config);
-
+        
         SelecaoDeArquivos janela = new SelecaoDeArquivos();
         janela.setVisible(true);
     }
