@@ -17,25 +17,42 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Classe para processamento de dados oriundos de planilhas _sect_config.csv
+ * A classe {@code PlanilhaSectConfig} representa um arquivo CSV com registros de
+ * configuração de consoles do ACC exportados do SAGITARIO e fornece métodos
+ * para verificar a integridade desses dados.
  *
  * <p>
- * Esta classe fornece métodos para processar e verificar a integridade dos
- * dados de um arquivo CSV específico. Os métodos incluem a geração de um
- * relatório de integridade que identifica possíveis problemas nos dados, como a
- * ausência de cabeçalho, a quantidade incorreta de campos em cada linha e a
- * presença de campos vazios ou inválidos.
- * </p>
+ * Esta classe estende a classe {@code Planilha} e inclui constantes e métodos
+ * específicos para a validação de arquivos CSV. O método principal
+ * {@code verificarIntegridade} realiza várias verificações de integridade nos
+ * dados do arquivo CSV e gera um relatório detalhado.</p>
  *
  * @author luisg
  */
 public class PlanilhaSectConfig extends Planilha {
 
+    /**
+     * O cabeçalho padrão para uma planilha SectConfig. Este cabecalho define a
+     * estrutura esperada dos dados na planilha
+     */
     public static final String CABECALHO = "week;day;time;config_id;CTR;ASS;SETOR;QTD_CTR;QTD_ASS;MOV_ATCO;MOV_SET;SECT_CONFIG";
+    /**
+     * A quantidade de campos esperados em cada linha da planilha SectConfig.
+     * Calculada com base na quantidade de elementos separados por ponto e
+     * vírgula no cabeçalho
+     */
     public static final int CABECALHO_LENGTH = CABECALHO.split(";").length;
-    public static final String[] SETORES = {"S01", "S02", "S03", "S04", "S05", "S06", "S6F", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "18F"};
+    /**
+     * O sufixo padrão para o nome do arquivo de planilha SectConfig.
+     */
     public static final String SUFIXO_ARQUIVO = "_sect_config.csv";
-    
+    /**
+     * Array de strings que contém os códigos dos setores disponíveis para
+     * configuração. Estes códigos são utilizados para verificar a integridade
+     * dos dados da planilha _sect_config.csv.
+     */
+    public static final String[] SETORES = {"S01", "S02", "S03", "S04", "S05", "S06", "S6F", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "18F"};
+
     /**
      * Gera um relatório de integridade para um arquivo CSV especificado.
      *
@@ -89,7 +106,6 @@ public class PlanilhaSectConfig extends Planilha {
 //        for (String string : relatorioIntegridade) {
 //            System.out.println(string);
 //        }
-
         return relatorioIntegridade;
     }
 
@@ -170,7 +186,7 @@ public class PlanilhaSectConfig extends Planilha {
             relatorioIntegridade.add("\tNenhuma linha com erro");
         }
     }
-    
+
     /**
      * Verifica os horários das linhas fornecidas para garantir a integridade
      * dos dados.
@@ -193,9 +209,9 @@ public class PlanilhaSectConfig extends Planilha {
     private static void verificarHorarios(List<Linha> linhas, List<String> relatorioIntegridade) {
         Map<LocalTime, List<Linha>> mapaMinutos = mapearMinutos(linhas);
         verificarAusentes(mapaMinutos, relatorioIntegridade);
-        verificarHorarioComExcesso (mapaMinutos, relatorioIntegridade);
+        verificarHorarioComExcesso(mapaMinutos, relatorioIntegridade);
     }
-    
+
     /**
      * Mapeia uma lista de objetos do tipo Linha em um mapa que associa cada
      * minuto do dia a uma lista de Linhas.
@@ -212,12 +228,12 @@ public class PlanilhaSectConfig extends Planilha {
      */
     private static Map<LocalTime, List<Linha>> mapearMinutos(List<Linha> linhas) {
         Map<LocalTime, List<Linha>> mapaMinutos = new TreeMap<>();
-        
+
         for (Linha linha : linhas) {
             LocalTime minuto = LocalTime.parse(linha.getConteudo().split(";")[2], DateTimeFormatter.ISO_LOCAL_TIME);
             mapaMinutos.computeIfAbsent(minuto, listaExistente -> new ArrayList<>()).add(linha);
         }
-        
+
         popularMinutosFaltantes(mapaMinutos);
 
         return mapaMinutos;
@@ -231,14 +247,14 @@ public class PlanilhaSectConfig extends Planilha {
      */
     private static void popularMinutosFaltantes(Map<LocalTime, List<Linha>> mapaMinutos) {
         LocalTime min = LocalTime.MIN;
-        do {            
+        do {
             mapaMinutos.computeIfAbsent(min, k -> {
                 return new ArrayList<>();
             });
             min = min.plusMinutes(1);
         } while (min.isAfter(LocalTime.MIDNIGHT));
     }
-    
+
     /**
      * Verifica e registra horários ausentes no relatório de integridade.
      * <p>
@@ -270,7 +286,7 @@ public class PlanilhaSectConfig extends Planilha {
             relatorioIntegridade.add("\tNenhum horário ausente");
         }
     }
-    
+
     /**
      * Analisa o mapa `mapaMinutos` para identificar entradas (chaves
      * `LocalTime`) com uma correspondente `List<Linha>` que excede o tamanho da

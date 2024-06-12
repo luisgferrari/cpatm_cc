@@ -1,10 +1,6 @@
 package cc;
 
-import cc.service.PlanilhaConfig;
-import cc.service.PlanilhaSectConfig;
 import cc.view.SelecaoDeArquivos;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  *

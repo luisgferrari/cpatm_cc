@@ -17,7 +17,7 @@ class Planilha {
      *
      * <p>
      * Este método procura pela linha de cabeçalho definida pela constante
-     * {@link #CABECALHO}. Se encontrada, a linha de cabeçalho é adicionada à
+     * {@code #CABECALHO}. Se encontrada, a linha de cabeçalho é adicionada à
      * lista de cabeçalhos e removida da lista original de linhas. Um relatório
      * de integridade é atualizado com as informações sobre a presença e
      * localização do cabeçalho.</p>
@@ -61,11 +61,12 @@ class Planilha {
      * original. Um relatório de integridade é atualizado com as informações
      * sobre essas linhas.</p>
      *
-     * @param linhas a lista de linhas do arquivo CSV a ser processada.
+     * @param linhas a lista de linhas do arquivo CSV a ser processada
      * @param relatorioIntegridade a lista onde os resultados da verificação de
-     * integridade serão adicionados.
+     * integridade serão adicionados
      * @param qtdEsperadaDeCampos integer com a quantidade esperada de campos
-     * por linha.
+     * por linha
+     * @return lista contendo as linhas onde algum erro foi identificado
      */
     protected static List<Linha> verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos) {
         relatorioIntegridade.add("\nEXCLUSÃO: QUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
@@ -93,17 +94,17 @@ class Planilha {
 
     /**
      * Verifica se alguma linha possui campos vazios e as exclui do
-     * processamento.
+     * processamento
      *
      * <p>
      * Este método percorre cada linha da lista de linhas e verifica se há algum
      * campo vazio. Linhas contendo campos vazios são adicionadas a uma lista de
      * erro e removidas da lista original. Um relatório de integridade é
-     * atualizado com as informações sobre as linhas com campos vazios.</p>
+     * atualizado com as informações sobre as linhas com campos vazios</p>
      *
-     * @param linhas a lista de linhas do arquivo CSV a ser processada.
+     * @param linhas a lista de linhas do arquivo CSV a ser processada
      * @param relatorioIntegridade a lista onde os resultados da verificação de
-     * integridade serão adicionados.
+     * integridade serão adicionados
      */
     protected static void verificarCamposVazios(List<Linha> linhas, List<String> relatorioIntegridade) {
         relatorioIntegridade.add("\nEXCLUSÃO: LINHA COM CAMPO VAZIO");
@@ -127,7 +128,7 @@ class Planilha {
     }
 
     /**
-     * Verifica se uma linha possui algum campo vazio.
+     * Verifica se uma linha possui algum campo vazio
      *
      * <p>
      * Este método recebe uma string de conteúdo de linha e verifica se algum
@@ -135,8 +136,8 @@ class Planilha {
      * apenas de espaços em branco ou se for uma string vazia. Retorna
      * verdadeiro se um campo vazio for encontrado e falso caso contrário.</p>
      *
-     * @param linha a string contendo o conteúdo da linha a ser verificado.
-     * @return true se a linha contiver um campo vazio, false caso contrário.
+     * @param linha a string contendo o conteúdo da linha a ser verificado
+     * @return true se a linha contiver um campo vazio, false caso contrário
      */
     protected static boolean linhaTemCampoVazio(String linha) {
         String[] campos = linha.split(";");

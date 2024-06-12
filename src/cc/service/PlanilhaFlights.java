@@ -11,17 +11,51 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Classe para processamento de dados oriundos de planilhas _flights.csv
+ * A classe {@code PlanilhaFlights} representa um arquivo CSV com registros de
+ * voos exportados do SAGITARIO e fornece métodos para verificar a integridade
+ * desses dados.
  *
- * @author luisg
+ * <p>
+ * Esta classe estende a classe {@code Planilha} e inclui constantes e métodos
+ * específicos para a validação de arquivos CSV. O método principal
+ * {@code verificarIntegridade} realiza várias verificações de integridade nos
+ * dados do arquivo CSV e gera um relatório detalhado.</p>
+ *
+ * * @author luisg
  */
 public class PlanilhaFlights extends Planilha {
 
+    /**
+     * O cabeçalho padrão para uma planilha flights. Este cabecalho define a
+     * estrutura esperada dos dados na planilha.
+     */
     public static final String CABECALHO = "timestamp;config_id;sect_config;CTR;ASS;sector;#sectors;#ASS;CALLSIGN;ADEP;ADES;DOF;EOBT;SSR;flrul;";
-    //Devido ao campo timestamp utilizar ';' para separar a DATE do TIME foi necessário adicionar '+1' à QTD_CAMPOS
+    /**
+     * A quantidade de campos esperados em cada linha da planilha flights.
+     * Calculada com base na quantidade de elementos separados por ponto e
+     * vírgula no cabeçalho mais 1, devido ao campo timestamt utilizar ';' para
+     * separar a DATE do TIME.
+     */
     public static final int QTD_CAMPOS = CABECALHO.split(";").length + 1;
+    /**
+     * O sufixo padrão para o nome do arquivo de planilha flights.
+     */
     public static final String SUFIXO_ARQUIVO = "_flights.csv";
 
+    /**
+     * Verifica a integridade de um arquivo CSV e gera um relatório detalhado.
+     * <p>
+     * Este método lê um arquivo CSV, realiza várias verificações de integridade
+     * nos dados, e gera um relatório contendo os resultados dessas
+     * verificações. O relatório é salvo em um arquivo de saída com o mesmo nome
+     * do arquivo de entrada, mas com extensão .txt. Em caso de erro durante a
+     * leitura do arquivo, um relatório de erro é gerado e salvo em um arquivo
+     * com extensão -ERRO.txt.
+     * </p>
+     *
+     * @param inputFile o caminho para o arquivo CSV a ser verificado
+     * @return uma lista de strings contendo o relatório de integridade
+     */
     public static List<String> verificarIntegridade(Path inputFile) {
         List<String> relatorioIntegridade = new ArrayList<>();
         relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
@@ -35,8 +69,6 @@ public class PlanilhaFlights extends Planilha {
 
             validarLinhas(linhasDoArquivo, relatorioIntegridade);
 
-//            contarQtdLihas(linhasDoArquivo, relatorioIntegridade);
-//            verificarHorarios(linhasDoArquivo, relatorioIntegridade);
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
         } catch (IOException e) {
@@ -54,9 +86,24 @@ public class PlanilhaFlights extends Planilha {
         return relatorioIntegridade;
     }
 
+    /**
+     * Valida as linhas fornecidas e registra quaisquer erros de integridade no
+     * relatório especificado.
+     *
+     * <p>
+     * O método percorre a lista de linhas do arquivo, valida cada linha
+     * individualmente e, se encontrar algum erro, adiciona esse erro e a linha
+     * correspondente às listas de erros e linhas inválidas, respectivamente. No
+     * final, o método adiciona ao relatório de integridade uma mensagem
+     * indicando se houve erros ou não, e lista os detalhes das linhas
+     * inválidas.</p>
+     *
+     * @param linhasDoArquivo Lista de objetos {@code Linha} que representam as
+     * linhas do arquivo a serem validadas.
+     * @param relatorioIntegridade Lista de {@code String} onde será registrado
+     * o relatório de integridade das linhas.
+     */
     private static void validarLinhas(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade) {
-        //Remover linha abaixo
-//        relatorioIntegridade.clear();
         relatorioIntegridade.add("\nCONDIÇÃO: CAMPO INVÁLIDO");
 
         Iterator<Linha> iterador = linhasDoArquivo.iterator();
@@ -83,6 +130,22 @@ public class PlanilhaFlights extends Planilha {
         }
     }
 
+    /**
+     * Valida todos os campos de uma linha, retornando uma mensagem de erro
+     * formatada se houver algum campo inválido.
+     *
+     * <p>
+     * Este método verifica inicialmente se a quantidade de campos na linha está
+     * correta. Se a quantidade estiver incorreta, uma mensagem de erro é
+     * retornada. Em seguida, valida cada campo individualmente utilizando o
+     * método {@code validarCampo}. Se algum campo for inválido, uma mensagem de
+     * erro é construída e retornada; caso contrário, retorna {@code null}.</p>
+     *
+     * @param linha O objeto {@code Linha} que representa a linha a ser
+     * validada.
+     * @return Uma mensagem de erro formatada se houver campos inválidos,
+     * {@code null} se todos os campos forem válidos.
+     */
     private static String validarLinha(Linha linha) {
         String[] campos = linha.getConteudo().split(";");
         if (campos.length != QTD_CAMPOS) {
@@ -105,6 +168,22 @@ public class PlanilhaFlights extends Planilha {
         }
     }
 
+    /**
+     * Valida um campo específico de acordo com o índice fornecido, retornando
+     * uma mensagem de erro formatada se o campo for inválido.
+     *
+     * <p>
+     * Este método usa expressões regulares para verificar se o campo fornecido
+     * corresponde ao padrão esperado com base no índice. Se o campo não for
+     * válido, uma mensagem de erro é retornada; caso contrário, uma string
+     * vazia é retornada.</p>
+     *
+     * @param campo O valor do campo a ser validado.
+     * @param indice O índice que indica qual campo está sendo validado, onde
+     * cada valor corresponde a um campo específico.
+     * @return Uma mensagem de erro formatada se o campo for inválido, ou uma
+     * string vazia se o campo for válido.
+     */
     private static String validarCampo(String campo, int indice) {
         Pattern pattern;
         String regex;

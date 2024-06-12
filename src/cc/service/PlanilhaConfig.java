@@ -14,15 +14,41 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Classe para processamento de dados oriundos de planilhas _config.csv
+ * A classe {@code PlanilhaConfig} representa um arquivo CSV com registros de
+ * quantidade de controladores e assistentes utilizados assim como número de
+ * aeronaves na FIR CW exportados pelo SAGITARIO e fornece métodos para
+ * verificar a integridade desses dados.
+ * 
+ * <p>
+ * Esta classe estende a classe {@code Planilha} e inclui constantes e métodos
+ * específicos para a validação de arquivos CSV. O método principal
+ * {@code verificarIntegridade} realiza várias verificações de integridade nos
+ * dados do arquivo CSV e gera um relatório detalhado.</p>
  *
  * @author luisg
  */
 public class PlanilhaConfig extends Planilha {
-    
+
+    /**
+     * O cabeçalho padrão para uma planilha Config. Este cabecalho define a
+     * estrutura esperada dos dados na planilha.
+     */
     public static final String CABECALHO = "week;day;time;config_id;QTD_CTR;QTD_ASS;MOV;SECT_CONFIG";
+    /**
+     * A quantidade de campos esperados em cada linha da planilha Config.
+     * Calculada com base na quantidade de elementos separados por ponto e
+     * vírgula no cabeçalho.
+     */
     public static final int QTD_CAMPOS = CABECALHO.split(";").length;
+    /**
+     * A quantidade de linhas esperadas na planilha. Por padrão, cada arquivo
+     * contém 1 linha por minuto ao longo de 24 horas, totalizando assim 1440
+     * linhas.
+     */
     public static final int QTD_LINHAS = 1440;
+    /**
+     * O sufixo padrão para o nome do arquivo de planilha Config.
+     */
     public static final String SUFIXO_ARQUIVO = "_config.csv";
 
     /**
@@ -42,20 +68,20 @@ public class PlanilhaConfig extends Planilha {
     public static List<String> verificarIntegridade(Path inputFile) {
         List<String> relatorioIntegridade = new ArrayList<>();
         relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
-        
+
         try {
             List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
-            
+
             localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO);
             verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS);
             verificarCamposVazios(linhasDoArquivo, relatorioIntegridade);
-            
+
             contarQtdLihas(linhasDoArquivo, relatorioIntegridade);
             verificarHorarios(linhasDoArquivo, relatorioIntegridade);
-            
+
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
-        } catch (IOException e ) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
             relatorioIntegridade.add(e.getLocalizedMessage());
@@ -88,7 +114,7 @@ public class PlanilhaConfig extends Planilha {
     private static void contarQtdLihas(List<Linha> linhas, List<String> relatorioIntegridade) {
         relatorioIntegridade.add("\nCONDIÇÃO: QUANTIDADE DE LINHAS");
         int qtdLinhas = linhas.size();
-        
+
         if (QTD_LINHAS == qtdLinhas) {
             relatorioIntegridade.add("\tResultado: OK");
         } else {
@@ -138,7 +164,7 @@ public class PlanilhaConfig extends Planilha {
      */
     private static Map<LocalTime, List<Linha>> mapearMinutos(List<Linha> linhas) {
         Map<LocalTime, List<Linha>> mapaMinutos = new TreeMap<>();
-        
+
         for (Linha linha : linhas) {
             LocalTime minuto = LocalTime.parse(linha.getConteudo().split(";")[2], DateTimeFormatter.ISO_LOCAL_TIME);
             List<Linha> novaLista = mapaMinutos.compute(minuto, (key, listaExistente) -> {
@@ -148,11 +174,11 @@ public class PlanilhaConfig extends Planilha {
                 listaExistente.add(linha);
                 return listaExistente;
             });
-            mapaMinutos.put(minuto, novaLista);            
+            mapaMinutos.put(minuto, novaLista);
         }
-        
+
         popularMinutosFaltantes(mapaMinutos);
-        
+
         return mapaMinutos;
     }
 
@@ -173,13 +199,13 @@ public class PlanilhaConfig extends Planilha {
         relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO AUSENTE");
         List<String> listaAusentes = new ArrayList<>();
         Set<Map.Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
-        
+
         for (Map.Entry<LocalTime, List<Linha>> entry : entrySet) {
             if (entry.getValue() == null || entry.getValue().isEmpty()) {
                 listaAusentes.add(String.format("\t%s", entry.getKey().toString()));
             }
         }
-        
+
         if (!listaAusentes.isEmpty()) {
             relatorioIntegridade.addAll(listaAusentes);
             relatorioIntegridade.add(String.format("\tQuantidade: %d", listaAusentes.size()));
@@ -205,7 +231,7 @@ public class PlanilhaConfig extends Planilha {
         relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO DUPLICADO");
         List<String> listaDuplicados = new ArrayList<>();
         Set<Map.Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
-        
+
         for (Map.Entry<LocalTime, List<Linha>> entry : entrySet) {
             if (entry.getValue().size() > 1) {
                 for (Linha linha : entry.getValue()) {
@@ -214,7 +240,7 @@ public class PlanilhaConfig extends Planilha {
                 listaDuplicados.add("");
             }
         }
-        
+
         if (!listaDuplicados.isEmpty()) {
             relatorioIntegridade.addAll(listaDuplicados);
         } else {
@@ -230,12 +256,12 @@ public class PlanilhaConfig extends Planilha {
      */
     private static void popularMinutosFaltantes(Map<LocalTime, List<Linha>> mapaMinutos) {
         LocalTime min = LocalTime.MIN;
-        do {            
+        do {
             mapaMinutos.computeIfAbsent(min, k -> {
                 return new ArrayList<>();
             });
             min = min.plusMinutes(1);
         } while (min.isAfter(LocalTime.MIDNIGHT));
     }
-    
+
 }

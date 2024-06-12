@@ -11,11 +11,18 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 /**
+ * A classe implementa uma janela para selecionar arquivos CSV com dados
+ * oriundos do SAGITARIO para que sejam processados.
  *
  * @author luisg
  */
 public class SelecaoDeArquivos extends Frame {
 
+    /**
+     * Construtor da classe. Cria uma janela que permite ao usurário selecionar
+     * um ou mais arquivos CSV. Para arquivo cada é chamado um método de
+     * validação correspondente com base no nome do arquivo.
+     */
     public SelecaoDeArquivos() {
         // Criando uma janela principal (Frame) invisível
         Frame frame = new Frame();
