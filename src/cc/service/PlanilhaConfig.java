@@ -75,7 +75,7 @@ public class PlanilhaConfig extends Planilha {
             localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO);
             verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS);
             verificarCamposVazios(linhasDoArquivo, relatorioIntegridade);
-
+            
             contarQtdLihas(linhasDoArquivo, relatorioIntegridade);
             verificarHorarios(linhasDoArquivo, relatorioIntegridade);
 

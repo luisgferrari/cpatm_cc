@@ -18,8 +18,15 @@ import java.util.List;
  * @author luisg
  */
 public class SelecaoDeArquivos extends JFrame {
-
+    /**
+     * Área de texto onde são exibidas mensagens sobre o progresso do
+     * processamento dos arquivos.
+     */
     private final JTextArea textArea;
+    /**
+     * Barra de progresso que indica o estado de processamento dos arquivos
+     * selecionados.
+     */
     private final JProgressBar progressBar;
 
     /**
@@ -37,7 +44,7 @@ public class SelecaoDeArquivos extends JFrame {
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
         progressBar = new JProgressBar();
-
+        
         add(scrollPane, BorderLayout.CENTER);
         add(progressBar, BorderLayout.SOUTH);
 
