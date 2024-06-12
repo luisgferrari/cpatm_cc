@@ -55,7 +55,8 @@ public class PlanilhaFlights extends Planilha {
     }
 
     private static void validarLinhas(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade) {
-        relatorioIntegridade.clear();
+        //Remover linha abaixo
+//        relatorioIntegridade.clear();
         relatorioIntegridade.add("\nCONDIÇÃO: CAMPO INVÁLIDO");
 
         Iterator<Linha> iterador = linhasDoArquivo.iterator();
@@ -139,24 +140,48 @@ public class PlanilhaFlights extends Planilha {
                 msgErro = "sector: ";
                 break;
             case 7: //valida qtd_sectors
-                regex = "^([1-9]{1}|10)$";
-                msgErro = "sector: ";
+                regex = "^([1-9]{1}|1[0-8])$";
+                msgErro = "qtd_sector: ";
                 break;
             case 8: //valida qtd_ass
                 regex = "^([0-9]{1}|1[0-8]{1})$";
                 msgErro = "qtd_ass: ";
                 break;
-                
-                
-//          0               1               2           3               4       5       6       7               8           9           10      11      12      13      14      15
-//          data_timestamp, hora_timestamp, config_id,  sect_config,    ctr,    ass,    sector, qtd_sectors,    qtd_ass,    callsign,   ADEP,   ADES,   DOF,    EOBT,   SSR,    flrul
+            case 9: //valida callsign
+                regex = "^([a-zA-Z0-9]{5,7})$";
+                msgErro = "callsign: ";
+                break;
+            case 10: //valida ADEP
+                regex = "^([A-Z]{2}[A-Z0-9]{2})$";
+                msgErro = "ADEP: ";
+                break;
+            case 11: //valida ADES
+                regex = "^([A-Z]{2}[A-Z0-9]{2})$";
+                msgErro = "ADES: ";
+                break;
+            case 12: //valida DOF
+                regex = "^([0-9]{6})$";
+                msgErro = "DOF: ";
+                break;
+            case 13: //valida EOBT
+                regex = "^([0-1][0-9]|2[0-3])[0-5][0-9]$";
+                msgErro = "EOBT: ";
+                break;
+            case 14: //valida SSR
+                regex = "^A[0-7]{4}$";
+                msgErro = "SSR: ";
+                break;
+            case 15: //valida flrul
+                regex = "^(I|V|Y|Z)$";
+                msgErro = "flrul: ";
+                break;
             default:
                 return "";
         }
         pattern = Pattern.compile(regex);
         if (!pattern.matcher(campo).matches()) {
             msgErro = msgErro.concat(campo);
-            return msgErro;
+            return "|" + msgErro + "|";
         }
         return "";
     }
