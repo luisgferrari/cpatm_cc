@@ -227,7 +227,7 @@ public class PlanilhaFlights extends Planilha {
                 msgErro = "qtd_ass: ";
                 break;
             case 9: //valida callsign
-                regex = "^([a-zA-Z0-9]{5,7})$";
+                regex = "^([a-zA-Z0-9]{4,7})$";
                 msgErro = "callsign: ";
                 break;
             case 10: //valida ADEP
