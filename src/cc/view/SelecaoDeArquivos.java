@@ -85,11 +85,11 @@ public class SelecaoDeArquivos extends JFrame {
                 if (sufix.endsWith(".csv")) {
                     try {
                         if (sufix.equalsIgnoreCase(PlanilhaConfig.SUFIXO_ARQUIVO)) {
-                            PlanilhaConfig.verificarIntegridade(path);
+                            PlanilhaConfig.verificarIntegridade(path, true);
                         } else if (sufix.equalsIgnoreCase(PlanilhaSectConfig.SUFIXO_ARQUIVO)) {
-                            PlanilhaSectConfig.verificarIntegridade(path);
+                            PlanilhaSectConfig.verificarIntegridade(path, true);
                         } else if (sufix.equalsIgnoreCase(PlanilhaFlights.SUFIXO_ARQUIVO)) {
-                            PlanilhaFlights.verificarIntegridade(path);
+                            PlanilhaFlights.verificarIntegridade(path, true);
                         } else {
                             arquivosNaoValidados.add(arquivo.getName());
                         }

@@ -67,11 +67,13 @@ public class PlanilhaSectConfig extends Planilha {
      *
      * @param inputFile O caminho do arquivo CSV para o qual o relatório de
      * integridade será gerado.
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      * @return Uma lista de strings contendo o relatório de integridade gerado.
      */
-    public static List<String> verificarIntegridade(Path inputFile) {
+    public static List<String> verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
         List<String> relatorioIntegridade = new ArrayList<>();
-        relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
 
         try {
             List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
@@ -80,13 +82,21 @@ public class PlanilhaSectConfig extends Planilha {
                 throw new IOException("O Arquivo" + inputFile.toString() + "não pôde ser lido ou está vazio.");
             }
 
-            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO);
-            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, CABECALHO_LENGTH);
-            verificarCamposVazios(linhasDoArquivo, relatorioIntegridade);
-            verificarHorarios(linhasDoArquivo, relatorioIntegridade);
-            verificarQtdDeControladores(linhasDoArquivo, relatorioIntegridade, false);
-            verificarQtdDeAssistentes(linhasDoArquivo, relatorioIntegridade, false);
-
+            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO, detalharVerificacao);
+            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, CABECALHO_LENGTH, detalharVerificacao);
+            verificarCamposVazios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
+            verificarHorarios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
+            verificarQtdDeControladores(linhasDoArquivo, relatorioIntegridade, false, detalharVerificacao);
+            verificarQtdDeAssistentes(linhasDoArquivo, relatorioIntegridade, false, detalharVerificacao);
+            
+            if (relatorioIntegridade.isEmpty()) {
+                relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE");
+                relatorioIntegridade.add("OK");
+            } else {
+                relatorioIntegridade.add(0,"RELATÓRIO DE INTEGRIDADE");
+                relatorioIntegridade.add(1, inputFile.getFileName().toString());
+            }
+            
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
 
@@ -122,11 +132,14 @@ public class PlanilhaSectConfig extends Planilha {
      * de integridade será adicionado
      * @param removerInconsistencias se verdadeiro, remove as linhas
      * inconsistentes da lista de linhas do arquivo
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarQtdDeControladores(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, Boolean removerInconsistencias) {
-        relatorioIntegridade.add("\nCONDIÇÃO: QTD_CTR INCOMPATÍVEL COM CONFIG_ID");
+    private static void verificarQtdDeControladores(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, Boolean removerInconsistencias, boolean detalharVerificacao) {
         Iterator<Linha> iteradorLinhas = linhasDoArquivo.iterator();
         List<Linha> linhasComErro = new ArrayList<>();
+        boolean existeErro = false;
 
         while (iteradorLinhas.hasNext()) {
             Linha linha = iteradorLinhas.next();
@@ -135,6 +148,10 @@ public class PlanilhaSectConfig extends Planilha {
             String config_id = campos[3];
             String config_id_CTR = config_id.split("\\.")[0].replace("\"", "");
             if (!config_id_CTR.equals(qtd_CTR)) {
+                if (!existeErro) {
+                    existeErro = true;
+                    relatorioIntegridade.add("\nQTD_CTR INCOMPATÍVEL COM CONFIG_ID");
+                }
                 linhasComErro.add(linha);
                 relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
                 if (removerInconsistencias) {
@@ -144,7 +161,10 @@ public class PlanilhaSectConfig extends Planilha {
         }
 
         if (linhasComErro.isEmpty()) {
-            relatorioIntegridade.add("\tNenhuma linha com erro");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nQTD_CTR INCOMPATÍVEL COM CONFIG_ID");
+                relatorioIntegridade.add("\tNenhuma linha com erro");
+            }
         }
     }
 
@@ -161,11 +181,14 @@ public class PlanilhaSectConfig extends Planilha {
      * de integridade será adicionado
      * @param removerInconsistencias se verdadeiro, remove as linhas
      * inconsistentes da lista de linhas do arquivo
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarQtdDeAssistentes(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, Boolean removerInconsistencias) {
-        relatorioIntegridade.add("\nCONDIÇÃO: QTD_ASS INCOMPATÍVEL COM CONFIG_ID");
+    private static void verificarQtdDeAssistentes(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, Boolean removerInconsistencias, boolean detalharVerificacao) {
         Iterator<Linha> iteradorLinhas = linhasDoArquivo.iterator();
         List<Linha> linhasComErro = new ArrayList<>();
+        boolean existeErro = false;
 
         while (iteradorLinhas.hasNext()) {
             Linha linha = iteradorLinhas.next();
@@ -174,6 +197,10 @@ public class PlanilhaSectConfig extends Planilha {
             String config_id = campos[3];
             String config_id_CTR = config_id.split("\\.")[2].replace("\"", "");
             if (!config_id_CTR.equals(qtd_ASS)) {
+                if (!existeErro) {
+                    existeErro = true;
+                    relatorioIntegridade.add("\nQTD_CTR INCOMPATÍVEL COM CONFIG_ID");
+                }
                 linhasComErro.add(linha);
                 relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
                 if (removerInconsistencias) {
@@ -183,7 +210,10 @@ public class PlanilhaSectConfig extends Planilha {
         }
 
         if (linhasComErro.isEmpty()) {
-            relatorioIntegridade.add("\tNenhuma linha com erro");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nQTD_ASS INCOMPATÍVEL COM CONFIG_ID");
+                relatorioIntegridade.add("\tNenhuma linha com erro");
+            }
         }
     }
 
@@ -200,16 +230,19 @@ public class PlanilhaSectConfig extends Planilha {
      * @param linhas Uma lista de objetos `Linha` que precisam ser verificados.
      * @param relatorioIntegridade Uma lista de strings que será utilizada para
      * armazenar o relatório de integridade.
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      *
      * O método começa mapeando as linhas para horários específicos, armazenando
      * os resultados em um mapa. Em seguida, verifica se há horários ausentes e
      * horários com excesso de linhas, adicionando quaisquer problemas
      * encontrados ao `relatorioIntegridade`.
      */
-    private static void verificarHorarios(List<Linha> linhas, List<String> relatorioIntegridade) {
+    private static void verificarHorarios(List<Linha> linhas, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         Map<LocalTime, List<Linha>> mapaMinutos = mapearMinutos(linhas);
-        verificarAusentes(mapaMinutos, relatorioIntegridade);
-        verificarHorarioComExcesso(mapaMinutos, relatorioIntegridade);
+        verificarAusentes(mapaMinutos, relatorioIntegridade, detalharVerificacao);
+        verificarHorarioComExcesso(mapaMinutos, relatorioIntegridade, detalharVerificacao);
     }
 
     /**
@@ -267,9 +300,11 @@ public class PlanilhaSectConfig extends Planilha {
      * de linhas
      * @param relatorioIntegridade a lista onde será adicionado o relatório de
      * integridade
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarAusentes(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO AUSENTE");
+    private static void verificarAusentes(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         List<String> listaAusentes = new ArrayList<>();
         Set<Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
 
@@ -280,10 +315,14 @@ public class PlanilhaSectConfig extends Planilha {
         }
 
         if (!listaAusentes.isEmpty()) {
+            relatorioIntegridade.add("\nHORÁRIO AUSENTE");
             relatorioIntegridade.addAll(listaAusentes);
             relatorioIntegridade.add(String.format("\tQuantidade: %d", listaAusentes.size()));
         } else {
-            relatorioIntegridade.add("\tNenhum horário ausente");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nHORÁRIO AUSENTE");
+                relatorioIntegridade.add("\tNenhum horário ausente");
+            }
         }
     }
 
@@ -298,6 +337,9 @@ public class PlanilhaSectConfig extends Planilha {
      * contendo objetos `Linha`.
      * @param relatorioIntegridade Uma `List<String>` usada para armazenar o
      * relatório de integridade.
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      *
      * Este método itera por cada entrada no mapa `mapaMinutos`. Para cada
      * entrada, verifica se a `List<Linha>` associada não é nula e não está
@@ -316,8 +358,7 @@ public class PlanilhaSectConfig extends Planilha {
      * relatório com detalhes sobre os horários e excessos de linhas
      * identificados.
      */
-    private static void verificarHorarioComExcesso(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO COM EXCESSO DE REGISTROS");
+    private static void verificarHorarioComExcesso(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         List<String> listaExcessos = new ArrayList<>();
         Set<Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
 
@@ -334,9 +375,13 @@ public class PlanilhaSectConfig extends Planilha {
         }
 
         if (!listaExcessos.isEmpty()) {
+            relatorioIntegridade.add("\nHORÁRIO COM EXCESSO DE REGISTROS");
             relatorioIntegridade.addAll(listaExcessos);
         } else {
-            relatorioIntegridade.add("\tNenhum horário com erro");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nHORÁRIO COM EXCESSO DE REGISTROS");
+                relatorioIntegridade.add("\tNenhum horário com erro");
+            }
         }
     }
 }

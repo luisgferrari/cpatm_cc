@@ -18,7 +18,7 @@ import java.util.TreeMap;
  * quantidade de controladores e assistentes utilizados assim como número de
  * aeronaves na FIR CW exportados pelo SAGITARIO e fornece métodos para
  * verificar a integridade desses dados.
- * 
+ *
  * <p>
  * Esta classe estende a classe {@code Planilha} e inclui constantes e métodos
  * específicos para a validação de arquivos CSV. O método principal
@@ -63,21 +63,31 @@ public class PlanilhaConfig extends Planilha {
      * </p>
      *
      * @param inputFile o caminho para o arquivo CSV a ser verificado
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      * @return uma lista de strings contendo o relatório de integridade
      */
-    public static List<String> verificarIntegridade(Path inputFile) {
+    public static List<String> verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
         List<String> relatorioIntegridade = new ArrayList<>();
-        relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
 
         try {
             List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
 
-            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO);
-            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS);
-            verificarCamposVazios(linhasDoArquivo, relatorioIntegridade);
+            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO, detalharVerificacao);
+            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS, detalharVerificacao);
+            verificarCamposVazios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
+
+            contarQtdLihas(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
+            verificarHorarios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
             
-            contarQtdLihas(linhasDoArquivo, relatorioIntegridade);
-            verificarHorarios(linhasDoArquivo, relatorioIntegridade);
+            if (relatorioIntegridade.isEmpty()) {
+                relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE");
+                relatorioIntegridade.add("OK");
+            } else {
+                relatorioIntegridade.add(0,"RELATÓRIO DE INTEGRIDADE");
+                relatorioIntegridade.add(1, inputFile.getFileName().toString());
+            }
 
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
@@ -110,15 +120,20 @@ public class PlanilhaConfig extends Planilha {
      * @param linhas a lista de linhas a ser verificada
      * @param relatorioIntegridade a lista onde o relatório de integridade será
      * adicionado
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void contarQtdLihas(List<Linha> linhas, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: QUANTIDADE DE LINHAS");
+    private static void contarQtdLihas(List<Linha> linhas, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         int qtdLinhas = linhas.size();
 
         if (QTD_LINHAS == qtdLinhas) {
-            relatorioIntegridade.add("\tResultado: OK");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nQUANTIDADE DE LINHAS");
+                relatorioIntegridade.add("\tResultado: OK");
+            }
         } else {
-            relatorioIntegridade.add("\tResultado: FALHOU");
+            relatorioIntegridade.add("\nQUANTIDADE DE LINHAS");
             relatorioIntegridade.add("\tQtd esperada: " + QTD_LINHAS + " linhas");
             relatorioIntegridade.add("\tQtd encontrada: " + qtdLinhas + " linhas");
             int diferenca = qtdLinhas - QTD_LINHAS;
@@ -141,11 +156,14 @@ public class PlanilhaConfig extends Planilha {
      * @param linhas a lista de objetos Linha a serem verificadas
      * @param relatorioIntegridade a lista onde será adicionado o relatório de
      * integridade
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarHorarios(List<Linha> linhas, List<String> relatorioIntegridade) {
+    private static void verificarHorarios(List<Linha> linhas, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         Map<LocalTime, List<Linha>> mapaMinutos = mapearMinutos(linhas);
-        verificarAusentes(mapaMinutos, relatorioIntegridade);
-        verificarDuplicados(mapaMinutos, relatorioIntegridade);
+        verificarAusentes(mapaMinutos, relatorioIntegridade, detalharVerificacao);
+        verificarDuplicados(mapaMinutos, relatorioIntegridade, detalharVerificacao);
     }
 
     /**
@@ -194,9 +212,11 @@ public class PlanilhaConfig extends Planilha {
      * de linhas
      * @param relatorioIntegridade a lista onde será adicionado o relatório de
      * integridade
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarAusentes(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO AUSENTE");
+    private static void verificarAusentes(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         List<String> listaAusentes = new ArrayList<>();
         Set<Map.Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
 
@@ -207,10 +227,14 @@ public class PlanilhaConfig extends Planilha {
         }
 
         if (!listaAusentes.isEmpty()) {
+            relatorioIntegridade.add("\nHORÁRIO AUSENTE");
             relatorioIntegridade.addAll(listaAusentes);
             relatorioIntegridade.add(String.format("\tQuantidade: %d", listaAusentes.size()));
         } else {
-            relatorioIntegridade.add("\tNenhum horário ausente");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nHORÁRIO AUSENTE");
+                relatorioIntegridade.add("\tNenhum horário ausente");
+            }
         }
     }
 
@@ -226,9 +250,11 @@ public class PlanilhaConfig extends Planilha {
      * de linhas
      * @param relatorioIntegridade a lista onde será adicionado o relatório de
      * integridade
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void verificarDuplicados(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: HORÁRIO DUPLICADO");
+    private static void verificarDuplicados(Map<LocalTime, List<Linha>> mapaMinutos, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         List<String> listaDuplicados = new ArrayList<>();
         Set<Map.Entry<LocalTime, List<Linha>>> entrySet = mapaMinutos.entrySet();
 
@@ -242,9 +268,13 @@ public class PlanilhaConfig extends Planilha {
         }
 
         if (!listaDuplicados.isEmpty()) {
+            relatorioIntegridade.add("\nHORÁRIO DUPLICADO");
             relatorioIntegridade.addAll(listaDuplicados);
         } else {
-            relatorioIntegridade.add("\tNenhum horário duplicado");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nHORÁRIO DUPLICADO");
+                relatorioIntegridade.add("\tNenhum horário duplicado");
+            }
         }
     }
 

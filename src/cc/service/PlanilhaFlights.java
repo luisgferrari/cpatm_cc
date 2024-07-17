@@ -36,7 +36,7 @@ public class PlanilhaFlights extends Planilha {
      * vírgula no cabeçalho mais 1, devido ao campo timestamt utilizar ';' para
      * separar a DATE do TIME.
      */
-    public static final int QTD_CAMPOS = CABECALHO.split(";").length + 1;
+    public static final int QTD_CAMPOS = CABECALHO.split(";").length;
     /**
      * O sufixo padrão para o nome do arquivo de planilha flights.
      */
@@ -54,20 +54,21 @@ public class PlanilhaFlights extends Planilha {
      * </p>
      *
      * @param inputFile o caminho para o arquivo CSV a ser verificado
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      * @return uma lista de strings contendo o relatório de integridade
      */
-    public static List<String> verificarIntegridade(Path inputFile) {
+    public static List<String> verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
         List<String> relatorioIntegridade = new ArrayList<>();
         relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
 
         try {
             List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
 
-            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO);
-            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS);
-            verificarCamposVazios(linhasDoArquivo, relatorioIntegridade);
-
-            validarLinhas(linhasDoArquivo, relatorioIntegridade);
+            localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO, detalharVerificacao);
+            verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS, detalharVerificacao);
+            validarLinhas(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
 
             Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
@@ -102,9 +103,11 @@ public class PlanilhaFlights extends Planilha {
      * linhas do arquivo a serem validadas.
      * @param relatorioIntegridade Lista de {@code String} onde será registrado
      * o relatório de integridade das linhas.
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    private static void validarLinhas(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nCONDIÇÃO: CAMPO INVÁLIDO");
+    private static void validarLinhas(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, boolean detalharVerificacao) {
 
         Iterator<Linha> iterador = linhasDoArquivo.iterator();
         List<Linha> linhasInvalidas = new ArrayList<>();
@@ -120,8 +123,12 @@ public class PlanilhaFlights extends Planilha {
         }
 
         if (listaErros.isEmpty()) {
-            relatorioIntegridade.add("\tNenhuma linha com erro");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nCAMPO INVÁLIDO");
+                relatorioIntegridade.add("\tNenhuma linha com erro");
+            }
         } else {
+            relatorioIntegridade.add("\nCAMPO INVÁLIDO");
             int indice = 0;
             for (String erro : listaErros) {
                 relatorioIntegridade.add(String.format("\tLinha %4d - %s - %s", linhasInvalidas.get(indice).getEndereco(), erro, linhasInvalidas.get(indice++).getConteudo()));
@@ -153,7 +160,13 @@ public class PlanilhaFlights extends Planilha {
         } else {
             List<String> errosNaLinha = new ArrayList<>();
             for (int i = 0; i < campos.length; i++) {
-                errosNaLinha.add(validarCampo(campos[i], i));
+                if (i == 0) {
+                    errosNaLinha.add(validarCampo(campos[0].substring(0, 10),i));
+                } else if (i == 1){
+                    errosNaLinha.add(validarCampo(campos[0].substring(10, 18),i));
+                } else{
+                    errosNaLinha.add(validarCampo(campos[i], i+1));
+                }
             }
 
             if (errosNaLinha.isEmpty()) {

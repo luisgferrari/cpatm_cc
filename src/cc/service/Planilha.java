@@ -26,10 +26,12 @@ class Planilha {
      * @param relatorioIntegridade a lista onde os resultados da verificação de
      * integridade serão adicionados.
      * @param cabecalho a string contendo o cabecalho esperado no arquivo.
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    protected static void localizarCabecalho(List<Linha> linhas, List<String> relatorioIntegridade, String cabecalho) {
+    protected static void localizarCabecalho(List<Linha> linhas, List<String> relatorioIntegridade, String cabecalho, boolean detalharVerificacao) {
         List<Linha> listaCabecalhos = new ArrayList<>();
-        relatorioIntegridade.add("\nEXCLUSÃO: CABEÇALHO");
 
         Iterator<Linha> iteradorLinhas = linhas.iterator();
         while (iteradorLinhas.hasNext()) {
@@ -41,10 +43,14 @@ class Planilha {
         }
 
         if (!listaCabecalhos.isEmpty()) {
-            for (Linha linha : listaCabecalhos) {
-                relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nCABEÇALHO");
+                for (Linha linha : listaCabecalhos) {
+                    relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
+                }
             }
         } else {
+            relatorioIntegridade.add("\nCABEÇALHO");
             relatorioIntegridade.add("\tCabeçalho não encontrado");
         }
     }
@@ -66,10 +72,12 @@ class Planilha {
      * integridade serão adicionados
      * @param qtdEsperadaDeCampos integer com a quantidade esperada de campos
      * por linha
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      * @return lista contendo as linhas onde algum erro foi identificado
      */
-    protected static List<Linha> verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos) {
-        relatorioIntegridade.add("\nEXCLUSÃO: QUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
+    protected static List<Linha> verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos, boolean detalharVerificacao) {
 
         Iterator<Linha> iteradorLinhas = linhas.iterator();
         List<Linha> linhasComErro = new ArrayList<>();
@@ -84,8 +92,12 @@ class Planilha {
         }
 
         if (linhasComErro.isEmpty()) {
-            relatorioIntegridade.add("\tNenhuma linha filtrada");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
+                relatorioIntegridade.add("\tNenhuma linha filtrada");
+            }
         } else {
+            relatorioIntegridade.add("\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
             relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
         }
 
@@ -105,24 +117,32 @@ class Planilha {
      * @param linhas a lista de linhas do arquivo CSV a ser processada
      * @param relatorioIntegridade a lista onde os resultados da verificação de
      * integridade serão adicionados
+     * @param detalharVerificacao caso true o método detalhará no
+     * relatorioIntegridade todas as validações realizadas mesmo que não
+     * encontre erros
      */
-    protected static void verificarCamposVazios(List<Linha> linhas, List<String> relatorioIntegridade) {
-        relatorioIntegridade.add("\nEXCLUSÃO: LINHA COM CAMPO VAZIO");
+    protected static void verificarCamposVazios(List<Linha> linhas, List<String> relatorioIntegridade, boolean detalharVerificacao) {
         Iterator<Linha> iteradorLinhas = linhas.iterator();
-        List<Linha> linhasComErro = new ArrayList<>();
-
+        List<Linha> linhasComErro = new ArrayList<>();  
+        
         while (iteradorLinhas.hasNext()) {
             Linha linha = iteradorLinhas.next();
             if (linhaTemCampoVazio(linha.getConteudo())) {
                 linhasComErro.add(linha);
-                relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
                 iteradorLinhas.remove();
             }
         }
 
         if (linhasComErro.isEmpty()) {
-            relatorioIntegridade.add("\tNenhuma linha filtrada");
+            if (detalharVerificacao) {
+                relatorioIntegridade.add("\nLINHA COM CAMPO VAZIO");
+                relatorioIntegridade.add("\tNenhuma linha filtrada");
+            }
         } else {
+            relatorioIntegridade.add("\nLINHA COM CAMPO VAZIO");
+            for (Linha linha : linhasComErro) {
+                relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
+            }
             relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
         }
     }
