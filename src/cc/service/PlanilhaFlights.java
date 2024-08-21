@@ -71,16 +71,16 @@ public class PlanilhaFlights extends Planilha {
             verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS, detalharVerificacao);
             validarLinhas(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
 
-            Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
+            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
+            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
             relatorioIntegridade.add(e.getLocalizedMessage());
             Csv.escrever(relatorioIntegridade, outputFile);
         } catch (Exception e) {
             System.err.println(e.getMessage());
-            Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
+            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
             relatorioIntegridade.add(e.getLocalizedMessage());
             Csv.escrever(relatorioIntegridade, outputFile);
         }

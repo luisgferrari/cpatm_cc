@@ -97,7 +97,7 @@ public class PlanilhaSectConfig extends Planilha {
                 relatorioIntegridade.add(1, inputFile.getFileName().toString());
             }
             
-            Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", ".txt"));
+            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
 
         } catch (IOException e) {
@@ -107,7 +107,7 @@ public class PlanilhaSectConfig extends Planilha {
             relatorioIntegridade.add("\nErro ao ler arquivo: " + inputFile.toString());
             relatorioIntegridade.add(Arrays.toString(e.getStackTrace()));
 
-            Path outputFile = Paths.get(inputFile.getParent().toString(), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
+            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
             Csv.escrever(relatorioIntegridade, outputFile);
 
             return relatorioIntegridade;

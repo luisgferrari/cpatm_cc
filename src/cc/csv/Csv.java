@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,13 +52,17 @@ public class Csv {
      * @param caminho Caminho onde o arquivo deve ser escrito
      */
     public static void escrever(List<String> conteudo, Path caminho) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminho.toFile()))) {
-            for (String linha : conteudo) {
-                bw.write(linha);
-                bw.newLine();
-            }
+        try{
+            Files.createDirectories(caminho.getParent());
+            
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminho.toFile()))) {
+                for (String linha : conteudo) {
+                    bw.write(linha);
+                    bw.newLine();
+                }
+        }
         } catch (IOException e) {
-            System.err.println("Erro ao escrever arquivo: " + caminho);
+            System.err.println(e.getMessage());
         }
     }
 
