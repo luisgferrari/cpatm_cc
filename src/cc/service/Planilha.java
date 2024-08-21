@@ -47,12 +47,10 @@ class Planilha {
         }
 
         if (resultado.isEmpty()) {
-            resultado.add("\nCABEÇALHO");
             resultado.add("\tCabeçalho não encontrado");
-        } else {
-            resultado.add(0, "\nCABEÇALHO");
         }
-
+        
+        resultado.add(0, "\nCABEÇALHO");
         relatorio.addAll(resultado);
     }
 
@@ -96,13 +94,12 @@ class Planilha {
         }
 
         if (resultado.isEmpty()) {
-            resultado.add("\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
             resultado.add("\tNenhuma linha filtrada");
         } else {
             resultado.add("\tQtd linhas filtradas: " + resultado.size());
-            resultado.add(0, "\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
         }
-
+        
+        resultado.add(0, "\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
         relatorio.addAll(resultado);
     }
 
@@ -141,12 +138,13 @@ class Planilha {
         }
 
         if (resultado.isEmpty()) {
-            resultado.add("\nLINHA COM CAMPO VAZIO");
             resultado.add("\tNenhuma linha filtrada");
         } else {
             resultado.add("\tFiltradas: " + resultado.size());
-            resultado.add(0, "\nLINHA COM CAMPO VAZIO");
         }
+        
+        resultado.add(0, "\nLINHA COM CAMPO VAZIO");
+        relatorio.addAll(resultado);
     }
 
     /**
