@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -110,31 +111,31 @@ public class PlanilhaFlights extends Planilha {
     private static void validarLinhas(List<Linha> linhasDoArquivo, List<String> relatorioIntegridade, boolean detalharVerificacao) {
 
         Iterator<Linha> iterador = linhasDoArquivo.iterator();
-        List<Linha> linhasInvalidas = new ArrayList<>();
-        List<String> listaErros = new ArrayList<>();
+        List<Map.Entry<String, Linha>> listaDeErros = new ArrayList<>();
 
+        //Percorre e valida linhas do arquivo, adicionando inconsistências à lista de erros.
         while (iterador.hasNext()) {
             Linha linha = iterador.next();
             String erro = validarLinha(linha);
             if (!erro.isBlank()) {
-                listaErros.add(erro);
-                linhasInvalidas.add(linha);
+                listaDeErros.add(Map.entry(erro, linha));
             }
+        }
+        
+        if (!detalharVerificacao && listaDeErros.isEmpty()) {
+            return;
         }
 
-        if (listaErros.isEmpty()) {
-            if (detalharVerificacao) {
-                relatorioIntegridade.add("\nCAMPO INVÁLIDO");
-                relatorioIntegridade.add("\tNenhuma linha com erro");
-            }
+        relatorioIntegridade.add("\nCAMPO INVÁLIDO:");
+        if (listaDeErros.isEmpty()) {
+            relatorioIntegridade.add("\tNenhuma linha com erro");
         } else {
-            relatorioIntegridade.add("\nCAMPO INVÁLIDO");
-            int indice = 0;
-            for (String erro : listaErros) {
-                relatorioIntegridade.add(String.format("\tLinha %4d - %s - %s", linhasInvalidas.get(indice).getEndereco(), erro, linhasInvalidas.get(indice++).getConteudo()));
+            for (Map.Entry<String, Linha> entry : listaDeErros) {
+                relatorioIntegridade.add(String.format("\tLinha %4d - %s - %s", entry.getValue().getEndereco(), entry.getKey(), entry.getValue().getConteudo()));
             }
-            relatorioIntegridade.add("\tInválidas: " + indice);
+            relatorioIntegridade.add("\tInválidas: " + listaDeErros.size());
         }
+
     }
 
     /**
@@ -161,11 +162,11 @@ public class PlanilhaFlights extends Planilha {
             List<String> errosNaLinha = new ArrayList<>();
             for (int i = 0; i < campos.length; i++) {
                 if (i == 0) {
-                    errosNaLinha.add(validarCampo(campos[0].substring(0, 10),i));
-                } else if (i == 1){
-                    errosNaLinha.add(validarCampo(campos[0].substring(10, 18),i));
-                } else{
-                    errosNaLinha.add(validarCampo(campos[i], i+1));
+                    errosNaLinha.add(validarCampo(campos[0].substring(0, 10), i));
+                } else if (i == 1) {
+                    errosNaLinha.add(validarCampo(campos[0].substring(10, 18), i));
+                } else {
+                    errosNaLinha.add(validarCampo(campos[i], i + 1));
                 }
             }
 
