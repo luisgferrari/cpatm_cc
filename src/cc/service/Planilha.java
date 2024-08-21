@@ -18,41 +18,40 @@ class Planilha {
      * <p>
      * Este método procura pela linha de cabeçalho definida pela constante
      * {@code #CABECALHO}. Se encontrada, a linha de cabeçalho é adicionada à
-     * lista de cabeçalhos e removida da lista original de linhas. Um relatório
+     * lista de cabeçalhos e removida da lista original de linhas. O relatório
      * de integridade é atualizado com as informações sobre a presença e
      * localização do cabeçalho.</p>
      *
-     * @param linhas a lista de linhas do arquivo CSV a ser processada.
-     * @param relatorioIntegridade a lista onde os resultados da verificação de
-     * integridade serão adicionados.
+     * @param conteudo lista de Linhas do arquivo CSV a ser processada.
+     * @param relatorio relatório com os resultados das validações.
      * @param cabecalho a string contendo o cabecalho esperado no arquivo.
-     * @param detalharVerificacao caso true o método detalhará no
-     * relatorioIntegridade todas as validações realizadas mesmo que não
-     * encontre erros
+     * @param detalhar define se o resultado do método é acrescentado ao
+     * relatório quando o cabecalho não é encontrado.
      */
-    protected static void localizarCabecalho(List<Linha> linhas, List<String> relatorioIntegridade, String cabecalho, boolean detalharVerificacao) {
-        List<Linha> listaCabecalhos = new ArrayList<>();
+    protected static void localizarCabecalho(List<Linha> conteudo, List<String> relatorio, String cabecalho, boolean detalhar) {
+        Iterator<Linha> it_conteudo = conteudo.iterator();
+        boolean encontrouCabecalho = false;
+        List<String> resultado = new ArrayList<>();
 
-        Iterator<Linha> iteradorLinhas = linhas.iterator();
-        while (iteradorLinhas.hasNext()) {
-            Linha linha = iteradorLinhas.next();
+        while (it_conteudo.hasNext()) {
+            Linha linha = it_conteudo.next();
             if (linha.getConteudo().equals(cabecalho)) {
-                listaCabecalhos.add(linha);
-                iteradorLinhas.remove();
+                resultado.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
+                it_conteudo.remove();
+                encontrouCabecalho = true;
             }
         }
 
-        if (!listaCabecalhos.isEmpty()) {
-            if (detalharVerificacao) {
-                relatorioIntegridade.add("\nCABEÇALHO");
-                for (Linha linha : listaCabecalhos) {
-                    relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
-                }
-            }
-        } else {
-            relatorioIntegridade.add("\nCABEÇALHO");
-            relatorioIntegridade.add("\tCabeçalho não encontrado");
+        if (!detalhar && !encontrouCabecalho) {
+            return;
         }
+
+        if (resultado.isEmpty()) {
+            resultado.add("\tCabeçalho não encontrado");
+        }
+        
+        resultado.add(0, "\nCABEÇALHO");
+        relatorio.addAll(resultado);
     }
 
     /**
@@ -62,89 +61,90 @@ class Planilha {
      * <p>
      * Este método percorre cada linha da lista de linhas e verifica se a
      * quantidade de campos, delimitados por ponto e vírgula (;), corresponde ao
-     * esperado conforme definido no cabeçalho. Linhas com quantidade de campos
-     * diferente são adicionadas a uma lista de erro e removidas da lista
-     * original. Um relatório de integridade é atualizado com as informações
-     * sobre essas linhas.</p>
+     * esperado conforme definido no cabeçalho. Para cada linha discrepante uma
+     * mensagem é adicionada ao resultado e a linha é removida da lista de
+     * conteúdo. O resultado do método é adicionado ao relatório se houver
+     * discrepancias e/ou caso a variável detalhar é true.</p>
      *
-     * @param linhas a lista de linhas do arquivo CSV a ser processada
-     * @param relatorioIntegridade a lista onde os resultados da verificação de
-     * integridade serão adicionados
+     * @param conteudo lista de linhas do arquivo CSV a ser processada
+     * @param relatorio relatório com os resultados das validações.
      * @param qtdEsperadaDeCampos integer com a quantidade esperada de campos
      * por linha
-     * @param detalharVerificacao caso true o método detalhará no
-     * relatorioIntegridade todas as validações realizadas mesmo que não
-     * encontre erros
+     * @param detalhar define se o resultado do método é acrescentado ao
+     * relatório quando não existem linhas com quantidade de campos
+     * incompatíveis.
      * @return lista contendo as linhas onde algum erro foi identificado
      */
-    protected static List<Linha> verificarQuantidadeDeCampos(List<Linha> linhas, List<String> relatorioIntegridade, Integer qtdEsperadaDeCampos, boolean detalharVerificacao) {
+    protected static void verificarQuantidadeDeCampos(List<Linha> conteudo, List<String> relatorio, Integer qtdEsperadaDeCampos, boolean detalhar) {
+        List<String> resultado = new ArrayList<>();
+        Iterator<Linha> it_conteudo = conteudo.iterator();
+        boolean encontrouErro = false;
 
-        Iterator<Linha> iteradorLinhas = linhas.iterator();
-        List<Linha> linhasComErro = new ArrayList<>();
-
-        while (iteradorLinhas.hasNext()) {
-            Linha linha = iteradorLinhas.next();
+        while (it_conteudo.hasNext()) {
+            Linha linha = it_conteudo.next();
             if (linha.getConteudo().split(";").length != qtdEsperadaDeCampos) {
-                linhasComErro.add(linha);
-                relatorioIntegridade.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
-                iteradorLinhas.remove();
+                resultado.add("\tLinha " + String.format("%4d - %s", linha.getEndereco(), linha.getConteudo()));
+                it_conteudo.remove();
+                encontrouErro = true;
             }
         }
 
-        if (linhasComErro.isEmpty()) {
-            if (detalharVerificacao) {
-                relatorioIntegridade.add("\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
-                relatorioIntegridade.add("\tNenhuma linha filtrada");
-            }
+        if (!detalhar && !encontrouErro) {
+            return;
+        }
+
+        if (resultado.isEmpty()) {
+            resultado.add("\tNenhuma linha filtrada");
         } else {
-            relatorioIntegridade.add("\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
-            relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
+            resultado.add("\tQtd linhas filtradas: " + resultado.size());
         }
-
-        return linhasComErro;
+        
+        resultado.add(0, "\nQUANTIDADE DE CAMPOS INCOMPATÍVEL COM O CABEÇALHO");
+        relatorio.addAll(resultado);
     }
 
     /**
-     * Verifica se alguma linha possui campos vazios e as exclui do
-     * processamento
+     * Localiza e exclui do processamento linhas que possuem quantidade de
+     * campos diferente da quantidade esperada de campos.
      *
      * <p>
-     * Este método percorre cada linha da lista de linhas e verifica se há algum
-     * campo vazio. Linhas contendo campos vazios são adicionadas a uma lista de
-     * erro e removidas da lista original. Um relatório de integridade é
-     * atualizado com as informações sobre as linhas com campos vazios</p>
+     * Este método percorre cada linha do conteúdo e verifica se há algum campos
+     * vazios nas linhas. Linhas contendo campos vazios removidas da lista
+     * original. O resultado é adicionado ao relatório caso haja linhas
+     * excluídas ou caso o parâmetro detalhar seja true.</p>
      *
-     * @param linhas a lista de linhas do arquivo CSV a ser processada
-     * @param relatorioIntegridade a lista onde os resultados da verificação de
-     * integridade serão adicionados
-     * @param detalharVerificacao caso true o método detalhará no
-     * relatorioIntegridade todas as validações realizadas mesmo que não
-     * encontre erros
+     * @param conteudo conteúdo do arquivo CSV a ser processado
+     * @param relatorio lista onde os resultados da verificação de integridade
+     * serão adicionados
+     * @param detalhar caso true o método detalhará no relatório
+     * todas as validações realizadas mesmo que não encontre erros
      */
-    protected static void verificarCamposVazios(List<Linha> linhas, List<String> relatorioIntegridade, boolean detalharVerificacao) {
-        Iterator<Linha> iteradorLinhas = linhas.iterator();
-        List<Linha> linhasComErro = new ArrayList<>();  
-        
-        while (iteradorLinhas.hasNext()) {
-            Linha linha = iteradorLinhas.next();
+    protected static void verificarCamposVazios(List<Linha> conteudo, List<String> relatorio, boolean detalhar) {
+        List<String> resultado = new ArrayList<>();
+        Iterator<Linha> it_conteudo = conteudo.iterator();
+        boolean encontrouCampoVazio = false;
+
+        while (it_conteudo.hasNext()) {
+            Linha linha = it_conteudo.next();
             if (linhaTemCampoVazio(linha.getConteudo())) {
-                linhasComErro.add(linha);
-                iteradorLinhas.remove();
+                resultado.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
+                it_conteudo.remove();
+                encontrouCampoVazio = true;
             }
         }
 
-        if (linhasComErro.isEmpty()) {
-            if (detalharVerificacao) {
-                relatorioIntegridade.add("\nLINHA COM CAMPO VAZIO");
-                relatorioIntegridade.add("\tNenhuma linha filtrada");
-            }
-        } else {
-            relatorioIntegridade.add("\nLINHA COM CAMPO VAZIO");
-            for (Linha linha : linhasComErro) {
-                relatorioIntegridade.add("\tLinha " + String.format("%4d", linha.getEndereco()) + " - " + linha.getConteudo());
-            }
-            relatorioIntegridade.add("\tFiltradas: " + linhasComErro.size());
+        if (!detalhar && !encontrouCampoVazio) {
+            return;
         }
+
+        if (resultado.isEmpty()) {
+            resultado.add("\tNenhuma linha filtrada");
+        } else {
+            resultado.add("\tFiltradas: " + resultado.size());
+        }
+        
+        resultado.add(0, "\nLINHA COM CAMPO VAZIO");
+        relatorio.addAll(resultado);
     }
 
     /**
