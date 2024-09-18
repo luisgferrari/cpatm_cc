@@ -6,6 +6,7 @@ import cc.service.PlanilhaSectConfig;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
@@ -164,6 +165,48 @@ public class TelaInicial extends javax.swing.JFrame {
         fileChooser.setMultiSelectionEnabled(true);
         fileChooser.setDialogTitle("CC - Selecionar Arquivos");
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Arquivos CSV","csv"));
+        fileChooser.addChoosableFileFilter(new FileFilter(){
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) {
+                    return true;
+                }
+                return (file.getName().contains("config") && !file.getName().contains("sect"));
+            }
+            
+            @Override
+            public String getDescription() {
+                return "Arquivos CONFIG";
+            }
+        });
+        fileChooser.addChoosableFileFilter(new FileFilter(){
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) {
+                    return true;
+                }
+                return file.getName().contains("flights");
+            }
+            
+            @Override
+            public String getDescription() {
+                return "Arquivos FLIGHTS";
+            }
+        });
+        fileChooser.addChoosableFileFilter(new FileFilter(){
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) {
+                    return true;
+                }
+                return file.getName().contains("sect_config");
+            }
+            
+            @Override
+            public String getDescription() {
+                return "Arquivos SECT CONFIG";
+            }
+        });
         fileChooser.setAcceptAllFileFilterUsed(false);
         
         int returnValue = fileChooser.showOpenDialog(this);
