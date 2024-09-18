@@ -102,6 +102,7 @@ public class TelaInicial extends javax.swing.JFrame {
         });
 
         jButtonValidar.setText("Validar");
+        jButtonValidar.setEnabled(false);
         jButtonValidar.setMaximumSize(new java.awt.Dimension(80, 23));
         jButtonValidar.setMinimumSize(new java.awt.Dimension(80, 23));
         jButtonValidar.setPreferredSize(new java.awt.Dimension(80, 23));
@@ -190,7 +191,7 @@ public class TelaInicial extends javax.swing.JFrame {
                 }
             }
         }
-        
+        jButtonValidar.setEnabled(true);
     }//GEN-LAST:event_jButtonSelecionarArquivosActionPerformed
 
     private void jRadioButtonDetalharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonDetalharActionPerformed
@@ -248,6 +249,8 @@ public class TelaInicial extends javax.swing.JFrame {
             jProgressBar1.setString("Processamento Concluído");
         }
     }.execute(); 
+    
+        jButtonValidar.setEnabled(false);
     }//GEN-LAST:event_jButtonValidarActionPerformed
 
     /**
