@@ -5,6 +5,7 @@ import cc.entity.Linha;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -119,8 +120,8 @@ public class PlanilhaFlights extends Planilha {
         while (iterador.hasNext()) {
             Linha linha = iterador.next();
             String erro = validarLinha(linha);
-            if (!erro.isBlank()) {
-                listaDeErros.add(Map.entry(erro, linha));
+            if (!(erro == null || erro.isEmpty())) {
+                listaDeErros.add(new AbstractMap.SimpleEntry<>(erro, linha));
             }
         }
 
