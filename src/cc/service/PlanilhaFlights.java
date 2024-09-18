@@ -31,13 +31,15 @@ public class PlanilhaFlights extends Planilha {
      * estrutura esperada dos dados na planilha.
      */
     public static final String CABECALHO = "timestamp;config_id;sect_config;CTR;ASS;sector;#sectors;#ASS;CALLSIGN;ADEP;ADES;DOF;EOBT;SSR;flrul;";
+
     /**
      * A quantidade de campos esperados em cada linha da planilha flights.
      * Calculada com base na quantidade de elementos separados por ponto e
      * vírgula no cabeçalho mais 1, devido ao campo timestamt utilizar ';' para
      * separar a DATE do TIME.
      */
-    public static final int QTD_CAMPOS = CABECALHO.split(";").length;
+    public static final int QTD_CAMPOS = CABECALHO.split(";").length + 1;
+
     /**
      * O sufixo padrão para o nome do arquivo de planilha flights.
      */
@@ -121,7 +123,7 @@ public class PlanilhaFlights extends Planilha {
                 listaDeErros.add(Map.entry(erro, linha));
             }
         }
-        
+
         if (!detalharVerificacao && listaDeErros.isEmpty()) {
             return;
         }
@@ -161,13 +163,7 @@ public class PlanilhaFlights extends Planilha {
         } else {
             List<String> errosNaLinha = new ArrayList<>();
             for (int i = 0; i < campos.length; i++) {
-                if (i == 0) {
-                    errosNaLinha.add(validarCampo(campos[0].substring(0, 10), i));
-                } else if (i == 1) {
-                    errosNaLinha.add(validarCampo(campos[0].substring(10, 18), i));
-                } else {
-                    errosNaLinha.add(validarCampo(campos[i], i + 1));
-                }
+                errosNaLinha.add(validarCampo(campos[i], i));
             }
 
             if (errosNaLinha.isEmpty()) {
