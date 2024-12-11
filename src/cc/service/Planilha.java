@@ -162,7 +162,7 @@ class Planilha {
     protected static boolean linhaTemCampoVazio(String linha) {
         String[] campos = linha.split(";");
         for (String campo : campos) {
-            if (campo.isBlank()) {
+            if (campo == null || campo.isEmpty()) {
                 return true;
             }
         }

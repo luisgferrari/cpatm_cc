@@ -5,6 +5,7 @@ import cc.entity.Linha;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,11 +36,10 @@ public class PlanilhaFlights extends Planilha {
     /**
      * A quantidade de campos esperados em cada linha da planilha flights.
      * Calculada com base na quantidade de elementos separados por ponto e
-     * vírgula no cabeçalho mais 1, devido ao campo timestamt utilizar ';' para
-     * separar a DATE do TIME.
+     * vírgula no cabeçalho.
      */
-    public static final int QTD_CAMPOS = CABECALHO.split(";").length + 1;
-
+    public static final int QTD_CAMPOS = CABECALHO.split(";").length;
+    
     /**
      * O sufixo padrão para o nome do arquivo de planilha flights.
      */
@@ -119,8 +119,8 @@ public class PlanilhaFlights extends Planilha {
         while (iterador.hasNext()) {
             Linha linha = iterador.next();
             String erro = validarLinha(linha);
-            if (!erro.isBlank()) {
-                listaDeErros.add(Map.entry(erro, linha));
+            if (!(erro == null || erro.isEmpty())) {
+                listaDeErros.add(new AbstractMap.SimpleEntry<>(erro, linha));
             }
         }
 
@@ -163,7 +163,13 @@ public class PlanilhaFlights extends Planilha {
         } else {
             List<String> errosNaLinha = new ArrayList<>();
             for (int i = 0; i < campos.length; i++) {
-                errosNaLinha.add(validarCampo(campos[i], i));
+
+                if (i == 0) {
+                    errosNaLinha.add(validarCampo(campos[i].substring(0, 10), 0));
+                    errosNaLinha.add(validarCampo(campos[i].substring(10), 1));
+                } else {
+                    errosNaLinha.add(validarCampo(campos[i], i + 1));
+                }
             }
 
             if (errosNaLinha.isEmpty()) {
@@ -268,10 +274,32 @@ public class PlanilhaFlights extends Planilha {
                 return "";
         }
         pattern = Pattern.compile(regex);
+
+        /*
+        Verifica se o campo está vazio ou nulo e retorna uma mensagem de erro, exceto 
+        no caso do campo 13 (EOBT), onde a ausência de informação é permitida.
+    
+        Lógica:
+        - Se o campo for nulo ou estiver vazio:
+        - Para o campo 13 (EOBT), a ausência de informação é permitida, portanto 
+        retorna uma string vazia.
+        - Para os demais campos, concatena uma mensagem de erro indicando que o 
+        campo está vazio e a retorna, encapsulada por "|".
+         */
+        if (campo == null || campo.isEmpty()) {
+            if (indice == 13) {
+                return "";
+            } else {
+                msgErro = msgErro.concat("campo vazio");
+                return "|" + msgErro + "|";
+            }
+        }
+
         if (!pattern.matcher(campo).matches()) {
             msgErro = msgErro.concat(campo);
             return "|" + msgErro + "|";
         }
+
         return "";
     }
 }
