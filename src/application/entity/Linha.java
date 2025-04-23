@@ -1,4 +1,4 @@
-package cc.entity;
+package application.entity;
 
 /**
  * Representa uma linha em um arquivo CSV, contendo seu número de endereço e o

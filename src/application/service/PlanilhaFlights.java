@@ -1,7 +1,5 @@
-package cc.service;
+package application.service;
 
-import cc.csv.Csv;
-import cc.entity.Linha;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import application.csv.Csv;
+import application.entity.Linha;
 
 /**
  * A classe {@code PlanilhaFlights} representa um arquivo CSV com registros de
