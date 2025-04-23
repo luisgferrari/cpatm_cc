@@ -1,6 +1,5 @@
-package cc.csv;
+package application.csv;
 
-import cc.entity.Linha;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -10,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import application.entity.Linha;
 
 /**
  * Classe genérica para entrada e saída de dados através de arquivos CSV

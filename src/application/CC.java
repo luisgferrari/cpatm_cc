@@ -1,6 +1,6 @@
-package cc;
+package application;
 
-import cc.view.TelaInicial;
+import application.view.MainView;
 
 /**
  *
@@ -12,7 +12,8 @@ public class CC {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new TelaInicial();
+        //new TelaInicial();
+        new MainView();
     }
 
 }
