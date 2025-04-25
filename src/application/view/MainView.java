@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,10 +23,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import application.controller.MainController;
+import application.util.LoggerUtil;
 
 public class MainView extends JFrame {
 
-    private static final int PADDING = 5;
+    private static final Logger log = LoggerUtil.getLogger();
+        private static final int PADDING = 5;
     private JTable tabela;
     private DefaultTableModel tabelaModel; 
     private JButton btnSelecionar, btnValidar, btnSair;
@@ -39,8 +42,10 @@ public class MainView extends JFrame {
         arquivosSelecionados = controller.selecionarArquivos(this);
         adicionarArquivosNaTabela();
         atualizarEstadoBotaoValidar();
+        log.info("Arquivos selecionados: " + arquivosSelecionados.length);
     };
     private final ActionListener sairAction = e ->{
+        log.info("Botão sair acionado.");
         System.exit(0);
     };
     private final ActionListener removerArquivosAction = e -> {
@@ -48,6 +53,7 @@ public class MainView extends JFrame {
         if(linhasSelecionadas.length > 0){
             int confirmacao = JOptionPane.showConfirmDialog(this, "Remover arquivos selecionados?", "Remover arquivos", JOptionPane.YES_NO_OPTION);
             if (confirmacao == JOptionPane.YES_OPTION) {
+                log.info("Removendo " + linhasSelecionadas.length + " arquivos da tabela.");
                 for (int i = linhasSelecionadas.length -1; i >= 0; i--){
                     tabelaModel.removeRow(linhasSelecionadas[i]);
                 }
@@ -59,6 +65,7 @@ public class MainView extends JFrame {
     private final ActionListener validarAction = e -> {
         btnValidar.setEnabled(false);
         boolean detalhar = rbDetalhar.isSelected();
+        log.info("Iniciando validação com " + tabela.getRowCount() + " arquivos. detalhar=" + detalhar);
         progressBar.setVisible(true);
 
         new javax.swing.SwingWorker<Void,Integer>() {
@@ -73,13 +80,12 @@ public class MainView extends JFrame {
                     String tipo = tabelaModel.getValueAt(i, 1).toString();
                     
                     try {
-                        Thread.sleep(100);
                         boolean sucesso = controller.validarArquivo(nomeArquivo, tipo, detalhar);
 
                         if (sucesso) {
                             tabelaModel.setValueAt("OK", i, 2);
                         } else {
-                            tabelaModel.setValueAt("Tipo Inválido", i, 2);
+                            tabelaModel.setValueAt("ERRO", i, 2);
                         }
                     } catch (Exception e) {
                         tabelaModel.setValueAt("Erro", i, 2);
@@ -99,12 +105,14 @@ public class MainView extends JFrame {
             @Override
             protected void done() {
                 progressBar.setVisible(false);
+                log.info("Validação encerrada");
             }
         }.execute();
 
     };
 
     public MainView() {
+        log.info("MainView inicializada");
         setTitle("CC - Validação de .csv");
         setSize(600,400);
         setLocationRelativeTo(null);

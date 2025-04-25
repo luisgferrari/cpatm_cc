@@ -3,6 +3,7 @@ package application.controller;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -11,8 +12,16 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import application.service.PlanilhaConfig;
 import application.service.PlanilhaFlights;
 import application.service.PlanilhaSectConfig;
+import application.util.LoggerUtil;
+
 
 public class MainController {
+
+    private static final Logger log = LoggerUtil.getLogger();
+
+    public MainController(){
+        log.info("MainController inicializado");
+    }
 
     public File[] selecionarArquivos(JFrame parent) {
         JFileChooser jFileChooser = new JFileChooser();
@@ -40,20 +49,18 @@ public class MainController {
     
     public boolean validarArquivo(String caminhoArquivo, String tipo, boolean detalhar) {
         Path path = Paths.get(caminhoArquivo);
+        log.info("Iniciando validação de: " + path);
         
         switch (tipo) {
             case "CONFIG":
-                PlanilhaConfig.verificarIntegridade(path, detalhar);
-                break;
+                return PlanilhaConfig.verificarIntegridade(path, detalhar);
             case "SECT_CONFIG":
-                PlanilhaSectConfig.verificarIntegridade(path, detalhar);
-                break;
+                return PlanilhaSectConfig.verificarIntegridade(path, detalhar);
             case "FLIGHTS":
-                PlanilhaFlights.verificarIntegridade(path, detalhar);
-                break;
+                return PlanilhaFlights.verificarIntegridade(path, detalhar);
             default:
+                log.warning("Tipo inválido: " + tipo + " para " + path);
                 return false;
         }
-        return true;
     }
 }
