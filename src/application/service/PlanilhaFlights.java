@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import application.csv.Csv;
-import application.entity.Linha;
+import application.model.Linha;
 import application.util.LoggerUtil;
 
 /**

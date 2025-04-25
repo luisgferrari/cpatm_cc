@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import application.csv.Csv;
-import application.entity.Linha;
+import application.model.Linha;
 import application.util.LoggerUtil;
 
 /**

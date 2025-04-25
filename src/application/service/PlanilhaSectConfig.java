@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import application.csv.Csv;
-import application.entity.Linha;
+import application.model.Linha;
 import application.util.LoggerUtil;
 
 import java.util.Set;
