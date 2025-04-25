@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +13,11 @@ import java.util.Map.Entry;
 
 import application.csv.Csv;
 import application.entity.Linha;
+import application.util.LoggerUtil;
 
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * A classe {@code PlanilhaSectConfig} representa um arquivo CSV com registros de
@@ -33,6 +34,7 @@ import java.util.TreeMap;
  */
 public class PlanilhaSectConfig extends Planilha {
 
+    public static final Logger log = LoggerUtil.getLogger();
     /**
      * O cabeçalho padrão para uma planilha SectConfig. Este cabecalho define a
      * estrutura esperada dos dados na planilha
@@ -74,51 +76,50 @@ public class PlanilhaSectConfig extends Planilha {
      * encontre erros
      * @return Uma lista de strings contendo o relatório de integridade gerado.
      */
-    public static List<String> verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
+    public static boolean verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
+        log.info("Verificando planilha sect_config: " + inputFile);
+
         List<String> relatorioIntegridade = new ArrayList<>();
+        List<Linha> linhasDoArquivo = new ArrayList<>();
+        Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
+        String inputFileName = inputFile.getFileName().toString();
 
         try {
-            List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
-
-            if (linhasDoArquivo == null) {
-                throw new IOException("O Arquivo" + inputFile.toString() + "não pôde ser lido ou está vazio.");
-            }
-
+            linhasDoArquivo = Csv.lerLinhas(inputFile);
+        } catch (IOException e) {
+            String msgErro = "Exceção ao ler arquivo " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
+        }
+        
+        try {
             localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO, detalharVerificacao);
             verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, CABECALHO_LENGTH, detalharVerificacao);
             verificarCamposVazios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
             verificarHorarios(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
             verificarQtdDeControladores(linhasDoArquivo, relatorioIntegridade, false, detalharVerificacao);
             verificarQtdDeAssistentes(linhasDoArquivo, relatorioIntegridade, false, detalharVerificacao);
-            
-            if (relatorioIntegridade.isEmpty()) {
-                relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE");
-                relatorioIntegridade.add("OK");
-            } else {
-                relatorioIntegridade.add(0,"RELATÓRIO DE INTEGRIDADE");
-                relatorioIntegridade.add(1, inputFile.getFileName().toString());
-            }
-            
-            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
-            Csv.escrever(relatorioIntegridade, outputFile);
-
-        } catch (IOException e) {
-            System.err.println("Erro ao ler arquivo: " + inputFile.toString());
-            System.err.println(Arrays.toString(e.getStackTrace()));
-
-            relatorioIntegridade.add("\nErro ao ler arquivo: " + inputFile.toString());
-            relatorioIntegridade.add(Arrays.toString(e.getStackTrace()));
-
-            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
-            Csv.escrever(relatorioIntegridade, outputFile);
-
-            return relatorioIntegridade;
+        } catch (Exception e) {
+            String msgErro = "Exceção ao processar arquivo " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
         }
 
-//        for (String string : relatorioIntegridade) {
-//            System.out.println(string);
-//        }
-        return relatorioIntegridade;
+        if (relatorioIntegridade.isEmpty()) {
+            relatorioIntegridade.add("OK");
+        }
+        relatorioIntegridade.add(0,"RELATÓRIO DE INTEGRIDADE");
+        relatorioIntegridade.add(1, inputFileName);
+
+        try {
+            Csv.escrever(relatorioIntegridade, outputFile);
+        } catch (Exception e) {
+            String msgErro = "Erro ao escrever o relatório de integridade para o arquivo: " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
+        }
+        
+        return true;
     }
 
     /**

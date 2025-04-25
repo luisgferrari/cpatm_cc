@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import application.csv.Csv;
 import application.entity.Linha;
+import application.util.LoggerUtil;
 
 /**
  * A classe {@code PlanilhaFlights} representa um arquivo CSV com registros de
@@ -28,6 +30,7 @@ import application.entity.Linha;
  */
 public class PlanilhaFlights extends Planilha {
 
+    private static final Logger log = LoggerUtil.getLogger();
     /**
      * O cabeçalho padrão para uma planilha flights. Este cabecalho define a
      * estrutura esperada dos dados na planilha.
@@ -63,32 +66,47 @@ public class PlanilhaFlights extends Planilha {
      * encontre erros
      * @return uma lista de strings contendo o relatório de integridade
      */
-    public static List<String> verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
+    public static boolean verificarIntegridade(Path inputFile, boolean detalharVerificacao) {
+        log.info("Verificando planilha config: " + inputFile);
+
         List<String> relatorioIntegridade = new ArrayList<>();
-        relatorioIntegridade.add("RELATÓRIO DE INTEGRIDADE - " + inputFile.getFileName().toString());
+        List<Linha> linhasDoArquivo = new ArrayList<>();
+        Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
+        String inputFileName = inputFile.getFileName().toString();
 
         try {
-            List<Linha> linhasDoArquivo = Csv.lerLinhas(inputFile);
+            linhasDoArquivo = Csv.lerLinhas(inputFile);
+        } catch (IOException e) {
+            String msgErro = "Exceção ao ler arquivo " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
+        }
 
+        try {
             localizarCabecalho(linhasDoArquivo, relatorioIntegridade, CABECALHO, detalharVerificacao);
             verificarQuantidadeDeCampos(linhasDoArquivo, relatorioIntegridade, QTD_CAMPOS, detalharVerificacao);
             validarLinhas(linhasDoArquivo, relatorioIntegridade, detalharVerificacao);
-
-            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
-            Csv.escrever(relatorioIntegridade, outputFile);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
-            relatorioIntegridade.add(e.getLocalizedMessage());
-            Csv.escrever(relatorioIntegridade, outputFile);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Erro"), inputFile.getFileName().toString().replace(".csv", "-ERRO.txt"));
-            relatorioIntegridade.add(e.getLocalizedMessage());
-            Csv.escrever(relatorioIntegridade, outputFile);
+            String msgErro = "Exceção ao processar arquivo " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
         }
 
-        return relatorioIntegridade;
+        if (relatorioIntegridade.isEmpty()) {
+            relatorioIntegridade.add("OK");
+        }
+        relatorioIntegridade.add(0,"RELATÓRIO DE INTEGRIDADE");
+        relatorioIntegridade.add(1, inputFileName);
+
+        try {
+            Csv.escrever(relatorioIntegridade, outputFile);
+        } catch (Exception e) {
+            String msgErro = "Erro ao escrever o relatório de integridade para o arquivo: " + inputFileName;
+            registrarErro(inputFile, msgErro, e);
+            return false;
+        }
+        
+        return true;
     }
 
     /**
