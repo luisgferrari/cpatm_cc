@@ -54,7 +54,7 @@ public class PlanilhaConfig extends Planilha {
     /**
      * O sufixo padrão para o nome do arquivo de planilha Config.
      */
-    public static final String SUFIXO_ARQUIVO = "_config.csv";
+    public static final String SUFIXO = "_config.csv";
 
     /**
      * Verifica a integridade de um arquivo CSV e gera um relatório detalhado.

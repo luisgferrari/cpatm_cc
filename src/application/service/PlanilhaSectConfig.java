@@ -49,7 +49,7 @@ public class PlanilhaSectConfig extends Planilha {
     /**
      * O sufixo padrão para o nome do arquivo de planilha SectConfig.
      */
-    public static final String SUFIXO_ARQUIVO = "_sect_config.csv";
+    public static final String SUFIXO = "_sect_config.csv";
     /**
      * Array de strings que contém os códigos dos setores disponíveis para
      * configuração. Estes códigos são utilizados para verificar a integridade

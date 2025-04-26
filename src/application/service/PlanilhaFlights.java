@@ -47,7 +47,7 @@ public class PlanilhaFlights extends Planilha {
     /**
      * O sufixo padrão para o nome do arquivo de planilha flights.
      */
-    public static final String SUFIXO_ARQUIVO = "_flights.csv";
+    public static final String SUFIXO = "_flights.csv";
 
     /**
      * Verifica a integridade de um arquivo CSV e gera um relatório detalhado.
