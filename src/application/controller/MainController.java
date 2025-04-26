@@ -2,13 +2,17 @@ package application.controller;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import application.model.ArquivoCSV;
+import application.model.StatusArquivo;
+import application.model.TipoArquivo;
 import application.service.PlanilhaConfig;
 import application.service.PlanilhaFlights;
 import application.service.PlanilhaSectConfig;
@@ -23,44 +27,53 @@ public class MainController {
         log.info("MainController inicializado");
     }
 
-    public File[] selecionarArquivos(JFrame parent) {
+    public List<ArquivoCSV> selecionarArquivos(JFrame parent) {
+        log.info("Selecinando arquivos");
         JFileChooser jFileChooser = new JFileChooser();
         jFileChooser.setMultiSelectionEnabled(true);
         jFileChooser.setFileFilter(new FileNameExtensionFilter("Arquivos CSV", "csv")); 
-        
+        List<ArquivoCSV> listaArquivosCSV = new ArrayList<>();
+
         int resultado = jFileChooser.showOpenDialog(parent);
         if (resultado == JFileChooser.APPROVE_OPTION) {
-            return jFileChooser.getSelectedFiles();
+            File[] arquivosSelecionados = jFileChooser.getSelectedFiles();
+            for (File f : arquivosSelecionados) {
+                ArquivoCSV arquivoCSV = new ArquivoCSV(f.toPath());      
+                listaArquivosCSV.add(arquivoCSV);         
+            }
         }
 
-        return new File[0];
-    }
-
-    public String identificarTipoDePlanilha(String nome) {
-        if (nome.endsWith(PlanilhaFlights.SUFIXO_ARQUIVO)) {
-            return "FLIGHTS";
-        } else if (nome.endsWith(PlanilhaSectConfig.SUFIXO_ARQUIVO)) {
-            return "SECT_CONFIG";
-        } else if (nome.endsWith(PlanilhaConfig.SUFIXO_ARQUIVO)) {
-            return "CONFIG";
-        }
-        return "DESCONHECIDO";
+        return listaArquivosCSV;
     }
     
-    public boolean validarArquivo(String caminhoArquivo, String tipo, boolean detalhar) {
-        Path path = Paths.get(caminhoArquivo);
+    public void validarArquivo(ArquivoCSV arquivoCSV, boolean detalhar) {
+        Path path = arquivoCSV.getPath();
+        TipoArquivo tipoArquivo = arquivoCSV.getTipo();
+        boolean resultadoValidacao = false;
         log.info("Iniciando validação de: " + path);
-        
-        switch (tipo) {
-            case "CONFIG":
-                return PlanilhaConfig.verificarIntegridade(path, detalhar);
-            case "SECT_CONFIG":
-                return PlanilhaSectConfig.verificarIntegridade(path, detalhar);
-            case "FLIGHTS":
-                return PlanilhaFlights.verificarIntegridade(path, detalhar);
+
+        switch (tipoArquivo) {
+            case CONFIG:
+                resultadoValidacao = PlanilhaConfig.verificarIntegridade(path, detalhar);
+                break;
+            case SECT_CONFIG:
+                resultadoValidacao = PlanilhaSectConfig.verificarIntegridade(path, detalhar);
+                break;
+            case FLIGHTS:
+                resultadoValidacao = PlanilhaFlights.verificarIntegridade(path, detalhar);
+                break;
+            case DESCONHECIDO:
+                log.warning("Tipo de arquivo inválido para validação: " + tipoArquivo.toString());
+                arquivoCSV.setStatus(StatusArquivo.TIPO_DESCONHECIDO);
+                return;
             default:
-                log.warning("Tipo inválido: " + tipo + " para " + path);
-                return false;
+                throw new IllegalArgumentException("Tipo de arquivo não tratado: " + tipoArquivo);
+        }
+
+        if (resultadoValidacao) {
+            arquivoCSV.setStatus(StatusArquivo.VALIDADO);
+        } else {
+            arquivoCSV.setStatus(StatusArquivo.ERRO);
         }
     }
 }

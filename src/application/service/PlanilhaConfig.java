@@ -13,7 +13,7 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import application.csv.Csv;
-import application.entity.Linha;
+import application.model.Linha;
 import application.util.LoggerUtil;
 
 /**
@@ -54,7 +54,7 @@ public class PlanilhaConfig extends Planilha {
     /**
      * O sufixo padrão para o nome do arquivo de planilha Config.
      */
-    public static final String SUFIXO_ARQUIVO = "_config.csv";
+    public static final String SUFIXO = "_config.csv";
 
     /**
      * Verifica a integridade de um arquivo CSV e gera um relatório detalhado.
