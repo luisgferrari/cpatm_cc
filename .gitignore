@@ -4,8 +4,10 @@
 # Ignore Gradle build output directory
 build
 
-# Ignore log files
+# Log Files and outputs
 cc.log
+sampleData/Relatórios/
 
 # Ignore AndroidStudio files
 .idea
+

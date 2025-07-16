@@ -198,14 +198,11 @@ class Planilha {
     }
 
     protected static Path getOutputPath(Path path) {
-        log.log(Level.INFO, "Creating outputPath");
-        log.log(Level.INFO, "Path: " + path);
-
         Path parent = path.getParent().resolve("Relatórios");
         String fileName = path.getFileName().toString().replace(".csv", ".txt");
-
         Path outputPath = Paths.get(parent.toString(),fileName);
-        log.log(Level.INFO, "OutputPath: " + outputPath);
+
+        log.log(Level.INFO, "\nInputPath: " + path + "\nOutputPath: " + outputPath);
         return outputPath;
     }
 }
