@@ -1,5 +1,8 @@
 package org.example.csv;
 
+import org.example.model.Linha;
+import org.example.util.LoggerUtil;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -12,13 +15,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.example.model.Linha;
-import org.example.util.LoggerUtil;
-
 /**
  * Classe genérica para entrada e saída de dados através de arquivos CSV
  *
- * @author luisg
+ * @author codrilo
  */
 public class Csv {
 
@@ -28,41 +28,28 @@ public class Csv {
     }
 
     /**
-     * Realiza a leitura de um arquivo CSV e retorna seu conteúdo e o número da
-     * linha em que foi encontrado através de uma lista de Linhas
-     *
-     * @param caminho o endereço para o arquivo a ser lido
-     * @return Lista de Linha com a localização e o conteúdo de cada linha
-     * @throws java.io.IOException se ocorrer um erro de leitura do arquivo
+     * Reads from a CSV file
+     * @param path path to CSV file.
+     * @return List containing read lines and the addresses of said lines in the file.
      */
-    public static List<Linha> lerLinhas(Path caminho) throws IOException {
-        log.info("Lendo arquivo csv " + caminho);
-        List<Linha> conteudo = new ArrayList<>();
-        String linhaCSV = null;
-        int numLinha = 0;
+    public static List<Linha> getLines(Path path) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(path.toFile()))) {
+            List<Linha> lines = new ArrayList<>();
+            String csvLine;
+            int address = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(caminho.toFile()))) {
-            linhaCSV = br.readLine();
-            while (linhaCSV != null) {
-                Linha linha = new Linha(++numLinha, linhaCSV);
-                conteudo.add(linha);
-                linhaCSV = br.readLine();
+            csvLine = br.readLine();
+            while (csvLine != null) {
+                Linha line = new Linha(++address, csvLine);
+                lines.add(line);
+                csvLine = br.readLine();
             }
-            
+
+            return lines;
         } catch (IOException e) {
-            log.log(Level.WARNING, "Exceção ao ler arquivo CSV", e);
-
-            if (numLinha > 0){
-                log.log(Level.INFO, "Última linha lida " + numLinha);
-            }
-
-            if(linhaCSV != null && !linhaCSV.isEmpty()){
-                log.log(Level.INFO, "Conteúdo da última linha lida: " + linhaCSV);
-            }
-            throw e;
+            log.warning("I/O error while reading :" + path + ". Details: " + e.getMessage());
+            throw new IOException("Falha ao processar o arquivo CSV: " + path.getFileName(), e);
         }
-        
-        return conteudo;
     }
 
     /**

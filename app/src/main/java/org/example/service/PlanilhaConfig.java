@@ -82,7 +82,7 @@ public class PlanilhaConfig extends Planilha {
         String inputFileName = inputFile.getFileName().toString();
         
         try {
-            linhasDoArquivo = Csv.lerLinhas(inputFile);
+            linhasDoArquivo = Csv.getLines(inputFile);
         } catch (IOException e) {
             String msgErro = "Exceção ao ler arquivo " + inputFileName;
             registrarErro(inputFile, msgErro, e);
