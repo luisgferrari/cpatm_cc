@@ -1,5 +1,13 @@
 package org.example.controller;
 
+import org.example.model.ArquivoCSV;
+import org.example.model.StatusArquivo;
+import org.example.model.TipoArquivo;
+import org.example.service.PlanilhaConfig;
+import org.example.service.PlanilhaFlights;
+import org.example.service.PlanilhaSectConfig;
+import org.example.util.LoggerUtil;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -9,14 +17,6 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.example.model.ArquivoCSV;
-import org.example.model.StatusArquivo;
-import org.example.model.TipoArquivo;
-import org.example.service.PlanilhaConfig;
-import org.example.service.PlanilhaFlights;
-import org.example.service.PlanilhaSectConfig;
-import org.example.util.LoggerUtil;
 
 
 public class MainController {
@@ -38,8 +38,8 @@ public class MainController {
         if (resultado == JFileChooser.APPROVE_OPTION) {
             File[] arquivosSelecionados = jFileChooser.getSelectedFiles();
             for (File f : arquivosSelecionados) {
-                ArquivoCSV arquivoCSV = new ArquivoCSV(f.toPath());      
-                listaArquivosCSV.add(arquivoCSV);         
+                ArquivoCSV arquivoCSV = new ArquivoCSV(f.toPath());
+                listaArquivosCSV.add(arquivoCSV);
             }
         }
 
