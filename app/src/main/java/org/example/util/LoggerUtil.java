@@ -12,7 +12,7 @@ public class LoggerUtil {
 
     static {
         try {
-            Handler fileHandler = new FileHandler("cc.log", true);
+            Handler fileHandler = new FileHandler("cc.log", false);
             fileHandler.setFormatter(new SimpleFormatter());
             LOGGER.addHandler(fileHandler);
             LOGGER.setLevel(Level.ALL);
