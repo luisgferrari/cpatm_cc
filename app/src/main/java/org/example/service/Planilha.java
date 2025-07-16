@@ -1,5 +1,6 @@
 package org.example.service;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -189,6 +190,10 @@ class Planilha {
         relatorioErro.add(msgErro);
         relatorioErro.add(e.getLocalizedMessage());
 
-        Csv.escrever(relatorioErro, outputFile);
+        try {
+            Csv.writeCSVFile(relatorioErro, outputFile);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

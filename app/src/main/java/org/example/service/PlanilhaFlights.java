@@ -99,7 +99,7 @@ public class PlanilhaFlights extends Planilha {
         relatorioIntegridade.add(1, inputFileName);
 
         try {
-            Csv.escrever(relatorioIntegridade, outputFile);
+            Csv.writeCSVFile(relatorioIntegridade, outputFile);
         } catch (Exception e) {
             String msgErro = "Erro ao escrever o relatório de integridade para o arquivo: " + inputFileName;
             registrarErro(inputFile, msgErro, e);

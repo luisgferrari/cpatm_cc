@@ -53,24 +53,24 @@ public class Csv {
     }
 
     /**
-     * Realiza a escrita de um arquivo CSV a partir de uma lista
+     * Writes a CSV file
      *
-     * @param conteudo Conteúdo a ser escrito no arquivo CSV
-     * @param caminho Caminho onde o arquivo deve ser escrito
+     * @param content Content to be written
+     * @param path destination path
      */
-    public static void escrever(List<String> conteudo, Path caminho) {
-        log.info("Escrevendo arquivo csv " + caminho);
-        try{
-            Files.createDirectories(caminho.getParent());
-            
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminho.toFile()))) {
-                for (String linha : conteudo) {
-                    bw.write(linha);
-                    bw.newLine();
-                }
-        }
+    public static void writeCSVFile(List<String> content, Path path) throws IOException {
+        try {
+            Files.createDirectories(path.getParent());
         } catch (IOException e) {
-            log.log(Level.WARNING, "Exceção ao escrever arquivo CSV", e);
+            log.log(Level.WARNING, "Failed to create parent directories for path: " + path.getParent(), e);
+            throw new IOException("Falha ao escrever arquivo CSV: " + path.getFileName(), e);
+        }
+
+        try {
+            Files.write(path, content);
+        } catch (IOException e) {
+            log.log(Level.WARNING, "I/O error while writing CSV file: " + path, e);
+            throw new IOException("Falha ao escrever o arquivo CSV: " + path.getFileName(), e);
         }
     }
 }
