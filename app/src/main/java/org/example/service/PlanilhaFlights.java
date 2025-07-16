@@ -71,7 +71,7 @@ public class PlanilhaFlights extends Planilha {
 
         List<String> relatorioIntegridade = new ArrayList<>();
         List<Linha> linhasDoArquivo;
-        Path outputFile = Paths.get(inputFile.getParent().toString().concat("\\Relatórios"), inputFile.getFileName().toString().replace(".csv", ".txt"));
+        Path outputPath = getOutputPath(inputFile);
         String inputFileName = inputFile.getFileName().toString();
 
         try {
@@ -99,7 +99,7 @@ public class PlanilhaFlights extends Planilha {
         relatorioIntegridade.add(1, inputFileName);
 
         try {
-            Csv.writeCSVFile(relatorioIntegridade, outputFile);
+            Csv.writeCSVFile(relatorioIntegridade, outputPath);
         } catch (Exception e) {
             String msgErro = "Erro ao escrever o relatório de integridade para o arquivo: " + inputFileName;
             registrarErro(inputFile, msgErro, e);
